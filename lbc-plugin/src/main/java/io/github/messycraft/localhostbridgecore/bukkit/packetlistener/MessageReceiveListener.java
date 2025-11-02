@@ -4,9 +4,8 @@ import com.github.retrooper.packetevents.event.SimplePacketListenerAbstract;
 import com.github.retrooper.packetevents.event.simple.PacketHandshakeReceiveEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.wrapper.handshaking.client.WrapperHandshakingClientHandshake;
-import com.github.retrooper.packetevents.wrapper.status.server.WrapperStatusServerResponse;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
+import io.github.messycraft.localhostbridgecore.api.LocalhostBridgeCoreAPIProvider;
+import io.github.messycraft.localhostbridgecore.bukkit.impl.ListenerManagerBukkitImpl;
 import io.github.messycraft.localhostbridgecore.bukkit.util.SimpleUtil;
 import org.bukkit.plugin.Plugin;
 
@@ -37,23 +36,15 @@ public class MessageReceiveListener extends SimplePacketListenerAbstract {
             String namespace = reqStr[2];
             boolean needReply = reqStr[3].equals("1");
             String seq = reqStr[4];
-            StringBuilder data = new StringBuilder();
+            StringBuilder dataSB = new StringBuilder();
             for (int i = 5; i < reqStr.length; i++) {
-                if (i > 5) data.append("$");
-                data.append(reqStr[i]);
+                if (i > 5) dataSB.append("$");
+                dataSB.append(reqStr[i]);
             }
+            String data = dataSB.toString();
             SimpleUtil.debug(String.format("Receive -> {%s, %s, %s, %s, %s}", unique, namespace, needReply, seq, data));
-            if (needReply) {
-                WrapperStatusServerResponse response = new WrapperStatusServerResponse(wrapData("abc123"));
-                event.getUser().sendPacketSilently(response);
-            }
+            ((ListenerManagerBukkitImpl) LocalhostBridgeCoreAPIProvider.getAPI().getListenerManager()).call(unique, namespace, seq, data, needReply, event.getUser());
         }
-    }
-
-    private JsonObject wrapData(String data) {
-        JsonObject json = new JsonObject();
-        json.add("data", new JsonPrimitive(data));
-        return json;
     }
 
 }

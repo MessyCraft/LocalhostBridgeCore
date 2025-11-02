@@ -6,7 +6,7 @@ package io.github.messycraft.localhostbridgecore.api.subscribe;
  */
 public abstract class ChannelListener implements Comparable<ChannelListener>{
 
-    public final byte priority;
+    protected final byte priority;
 
     /**
      * @param priority 优先级。优先级小的监听器优先被广播，优先级相同的监听器不保证广播顺序。

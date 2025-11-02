@@ -4,7 +4,6 @@ import io.github.messycraft.localhostbridgecore.api.LocalhostBridgeCoreAPI;
 import io.github.messycraft.localhostbridgecore.api.subscribe.ListenerManager;
 import io.github.messycraft.localhostbridgecore.bukkit.util.HttpClientUtil;
 import io.github.messycraft.localhostbridgecore.bukkit.util.SimpleUtil;
-import org.bukkit.plugin.Plugin;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -14,6 +13,8 @@ import java.util.function.Consumer;
 
 public class LBCAPIBukkitImpl implements LocalhostBridgeCoreAPI {
 
+    private final ListenerManager listenerManager = new ListenerManagerBukkitImpl();
+
     @Override
     public List<String> getRegisteredChannels() {
         HttpClientUtil.ResponseStruct resp = HttpClientUtil.doPost("/list", null, SimpleUtil.getUnique());
@@ -22,7 +23,7 @@ public class LBCAPIBukkitImpl implements LocalhostBridgeCoreAPI {
 
     @Override
     public ListenerManager getListenerManager() {
-        return null;
+        return listenerManager;
     }
 
     @Override
