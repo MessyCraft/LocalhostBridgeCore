@@ -1,0 +1,14 @@
+name: LocalhostBridgeCore
+version: '${project.version}'
+main: io.github.messycraft.localhostbridgecore.bukkit.LocalhostBridgeCore
+api-version: '1.13'
+load: STARTUP
+authors: [ImCur_]
+description: CLIENT side
+website: https://github.com/MessyCraft/LocalhostBridgeCore
+
+commands:
+  lbc-info:
+    description: "Console only"
+  lbc-reload:
+    description: "Console only"

@@ -1,0 +1,5 @@
+name: LocalhostBridgeCore
+version: '${project.version}'
+main: io.github.messycraft.localhostbridgecore.bungee.LocalhostBridgeCore
+author: ImCur_
+description: SERVER/PROXY side

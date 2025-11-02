@@ -1,0 +1,22 @@
+# LocalhostBridgeCore BungeeCord-Side 配置文件
+# 注意: 本插件未设置Token等安全验证，即对所有本地来源的操作是完全信任的，请确保所有使用端口无本地转发
+# 警告: 127.0.0.1 上的所有服务端对本通信网络有完全的控制权，如果你不信任它们，请不要使用本插件
+# 项目地址 https://github.com/MessyCraft/LocalhostBridgeCore
+# (作者很讨厌繁琐的配置，尽量简约啦..)
+
+# 绑定端口 (请不要对外网开放)
+bind-port: 31013
+
+# 是否允许客户端自主注册
+# 关闭后依然可以使用命令"lbc register"注册
+allow-register: true
+
+# 连接超时毫秒数，一般情况下你不需要更改此项
+timeout: 50
+
+# 会话失效毫秒数，一般情况下你不需要更改此项
+# 此设置直接关系到"lbc hello"的响应时间
+session-lifetime: 500
+
+# 调试模式，会输出一些详细信息
+debug: false
