@@ -14,6 +14,8 @@ import java.util.stream.Stream;
 
 public class LBCAPIBungeeImpl implements LocalhostBridgeCoreAPI {
 
+    private final ListenerManager listenerManager = new ListenerManagerBungeeImpl();
+
     @Override
     public List<String> getRegisteredChannels() {
         return Stream.concat(Stream.of("BC"), ChannelRegistrationUtil.getRegisteredChannel().keySet().stream()).collect(Collectors.toList());
@@ -21,7 +23,7 @@ public class LBCAPIBungeeImpl implements LocalhostBridgeCoreAPI {
 
     @Override
     public ListenerManager getListenerManager() {
-        return null;
+        return listenerManager;
     }
 
     @Override

@@ -40,7 +40,7 @@ public final class LocalhostBridgeCore extends JavaPlugin {
         getLogger().info("Plugin has been enabled.");
         getLogger().info("Type 'lbc-info' on console to get more!");
 
-        LocalhostBridgeCoreAPIProvider.setAPI(new LBCAPIBukkitImpl(this));
+        LocalhostBridgeCoreAPIProvider.setAPI(new LBCAPIBukkitImpl());
     }
 
     @Override

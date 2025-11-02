@@ -4,7 +4,7 @@ package io.github.messycraft.localhostbridgecore.api.subscribe;
 /**
  * 代表一个频道监听器。使用者需实现此类的抽象方法。
  */
-public abstract class ChannelListener {
+public abstract class ChannelListener implements Comparable<ChannelListener>{
 
     public final byte priority;
 
@@ -13,6 +13,11 @@ public abstract class ChannelListener {
      */
     public ChannelListener(byte priority) {
         this.priority = priority;
+    }
+
+    @Override
+    public int compareTo(ChannelListener ano) {
+        return priority - ano.priority;
     }
 
     /**
