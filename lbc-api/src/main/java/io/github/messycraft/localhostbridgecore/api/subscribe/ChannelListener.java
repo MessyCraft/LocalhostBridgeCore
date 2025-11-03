@@ -4,20 +4,15 @@ package io.github.messycraft.localhostbridgecore.api.subscribe;
 /**
  * 代表一个频道监听器。使用者需实现此类的抽象方法。
  */
-public abstract class ChannelListener implements Comparable<ChannelListener>{
+public abstract class ChannelListener {
 
-    protected final byte priority;
+    public final byte priority;
 
     /**
      * @param priority 优先级。优先级小的监听器优先被广播，优先级相同的监听器不保证广播顺序。
      */
     public ChannelListener(byte priority) {
         this.priority = priority;
-    }
-
-    @Override
-    public int compareTo(ChannelListener ano) {
-        return priority - ano.priority;
     }
 
     /**

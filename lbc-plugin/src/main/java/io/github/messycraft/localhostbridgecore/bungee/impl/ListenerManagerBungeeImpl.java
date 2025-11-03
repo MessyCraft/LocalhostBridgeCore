@@ -17,12 +17,10 @@ public class ListenerManagerBungeeImpl implements ListenerManager {
     @Override
     public void subscribe(ChannelListener listener, String... namespaces) {
         for (String namespace : namespaces) {
-            if (listeners.containsKey(namespace)) {
-                listeners.get(namespace).offer(listener);
+            if (!listeners.containsKey(namespace)) {
+                listeners.put(namespace, new PriorityQueue<>(Comparator.comparingInt(o -> o.priority)));
             }
-            else {
-                listeners.put(namespace, new PriorityQueue<>(Collections.singleton(listener)));
-            }
+            listeners.get(namespace).offer(listener);
         }
     }
 
