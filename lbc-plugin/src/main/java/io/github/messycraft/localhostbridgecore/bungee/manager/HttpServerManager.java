@@ -128,12 +128,7 @@ public final class HttpServerManager {
             return;
         }
         Headers headers = httpExchange.getRequestHeaders();
-        String unique = getHeaderValue(headers, "unique");
-        if (unique == null) {
-            closeWithoutBody(400, httpExchange);
-            return;
-        }
-        if (!ChannelRegistrationUtil.getRegisteredChannel().containsKey(unique)) {
+        if (!accessHeaders(headers)) {
             closeWithoutBody(403, httpExchange);
             return;
         }
@@ -141,11 +136,17 @@ public final class HttpServerManager {
     }
 
     private static void handleHello(HttpExchange httpExchange) {
-
+        // TODO
     }
 
     private static String getHeaderValue(Headers headers, String key) {
         return headers.containsKey(key) ? (headers.get(key).isEmpty() ? null : headers.get(key).get(0)) : null;
+    }
+
+    private static boolean accessHeaders(Headers headers) {
+        String unique = getHeaderValue(headers, "unique");
+        String port = getHeaderValue(headers, "port");
+        return unique != null && port != null && ChannelRegistrationUtil.isRegisteredOfBukkit(unique, port);
     }
 
 }

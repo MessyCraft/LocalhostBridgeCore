@@ -1,7 +1,6 @@
 package io.github.messycraft.localhostbridgecore.bungee.util;
 
 import io.github.messycraft.localhostbridgecore.bungee.LocalhostBridgeCore;
-import io.github.messycraft.localhostbridgecore.bungee.Properties;
 import io.github.messycraft.localhostbridgecore.bungee.entity.LChannel;
 import lombok.Getter;
 import net.md_5.bungee.config.Configuration;
@@ -9,7 +8,6 @@ import net.md_5.bungee.config.Configuration;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 public final class ChannelRegistrationUtil {
 
@@ -68,6 +66,11 @@ public final class ChannelRegistrationUtil {
 
     public static boolean isRegistered(String unique) {
         return "BC".equals(unique) || registeredChannel.containsKey(unique);
+    }
+
+    public static boolean isRegisteredOfBukkit(String unique, String portStr) {
+        LChannel c = registeredChannel.get(unique);
+        return c != null && String.valueOf(c.getPort()).equals(portStr);
     }
 
 }
