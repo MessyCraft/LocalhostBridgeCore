@@ -32,7 +32,7 @@ public class LBCAPIBungeeImpl implements LocalhostBridgeCoreAPI {
             throw new IllegalArgumentException("unique or namespace contains illegal characters");
         }
         if ("BC".equals(channel)) {
-            // special handle...
+            // TODO: special handle...
 
             return;
         }
@@ -44,12 +44,23 @@ public class LBCAPIBungeeImpl implements LocalhostBridgeCoreAPI {
 
     @Override
     public void sendForReply(String channel, String namespace, String body, Consumer<String> reply) {
-
+        sendForReply(channel, namespace, body, reply, null);
     }
 
     @Override
     public void sendForReply(String channel, String namespace, String body, Consumer<String> reply, Runnable noReply) {
+        if (!SimpleUtil.nameMatches(channel) || !SimpleUtil.nameMatches(namespace)) {
+            throw new IllegalArgumentException("unique or namespace contains illegal characters");
+        }
+        if ("BC".equals(channel)) {
+            // TODO: special handle...
 
+            return;
+        }
+        LChannel c = ChannelRegistrationUtil.getRegisteredChannel().get(channel);
+        if (c != null) {
+            c.sendChannelData(namespace, body, true, reply, noReply);
+        }
     }
 
     @Override

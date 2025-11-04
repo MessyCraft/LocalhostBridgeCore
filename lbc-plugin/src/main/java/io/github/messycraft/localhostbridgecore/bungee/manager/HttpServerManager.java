@@ -32,9 +32,7 @@ public final class HttpServerManager {
             logger.info("Start server on 127.0.0.1:" + port);
             server = HttpServer.create(new InetSocketAddress("127.0.0.1", port), 0);
             server.setExecutor(null);
-            server.createContext("/hello", httpExchange -> {
-                // to do sth
-            });
+            server.createContext("/hello", HttpServerManager::handleHello);
             server.createContext("/broadcast", httpExchange -> {
 
             });
@@ -140,6 +138,10 @@ public final class HttpServerManager {
             return;
         }
         closeWithBody(200, "BC$" + String.join("$", ChannelRegistrationUtil.getRegisteredChannel().keySet()), httpExchange);
+    }
+
+    private static void handleHello(HttpExchange httpExchange) {
+
     }
 
     private static String getHeaderValue(Headers headers, String key) {

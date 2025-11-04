@@ -1,5 +1,7 @@
 package io.github.messycraft.localhostbridgecore.bukkit.util;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import lombok.AllArgsConstructor;
 import org.bukkit.Bukkit;
 
@@ -10,11 +12,13 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
 
 public final class HttpClientUtil {
 
-    private static final int CONNECT_TIMEOUT = 50;
-    private static final int READ_TIMEOUT = 500;
+    private static int CONNECT_TIMEOUT = 50;
+    private static int READ_TIMEOUT = 500;
 
     private HttpClientUtil() {}
 
@@ -94,6 +98,32 @@ public final class HttpClientUtil {
             case -1: return SimpleUtil.color("&c服务器请求超时, 访问不可达.");
             default: return SimpleUtil.color("&4未知错误(显然作者完全没有意识到这个情况)");
         }
+    }
+
+    /**
+     * 发送Hello信息，必须外部异步使用否则抛出异常!
+     * @param target 目标频道，为null时代表所有
+     * @return 键表示目标频道名，值表示对应延时毫秒数(-1表示不可达)
+     * @throws RuntimeException if {@link Bukkit#isPrimaryThread()} be <tt>true</tt>
+     */
+    public static Map<String, Integer> hello(String target) throws RuntimeException {
+        if (Bukkit.isPrimaryThread()) {
+            throw new RuntimeException("Send hello ping in primary thread");
+        }
+        ResponseStruct resp = doPost("/hello", null, target);
+        Map<String, Integer> ret = new HashMap<>();
+        if (resp.code == 200) {
+            ret.putAll(new Gson().fromJson(resp.data, TypeToken.getParameterized(Map.class, String.class, Integer.class).getType()));
+        }
+        else {
+            ret.put(String.valueOf(target), -1);
+        }
+        return ret;
+    }
+
+    public static void resetTimeoutFromConfig() {
+        CONNECT_TIMEOUT = SimpleUtil.getTimeout();
+        READ_TIMEOUT = SimpleUtil.getSessionLifetime();
     }
 
     @AllArgsConstructor

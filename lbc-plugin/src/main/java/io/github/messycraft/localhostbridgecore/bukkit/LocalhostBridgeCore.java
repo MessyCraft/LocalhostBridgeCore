@@ -54,6 +54,7 @@ public final class LocalhostBridgeCore extends JavaPlugin {
     public void reloadConfig() {
         super.reloadConfig();
         String unique = SimpleUtil.getUnique();
+        HttpClientUtil.resetTimeoutFromConfig();
         if (unique == null || unique.equals("default")) {
             getLogger().warning("请在配置文件中更改默认频道名后使用 /lbc-reload 重新连接");
         }
