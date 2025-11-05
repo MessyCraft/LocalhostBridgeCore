@@ -4,6 +4,7 @@ import com.github.retrooper.packetevents.event.SimplePacketListenerAbstract;
 import com.github.retrooper.packetevents.event.simple.PacketHandshakeReceiveEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.wrapper.handshaking.client.WrapperHandshakingClientHandshake;
+import com.github.retrooper.packetevents.wrapper.status.server.WrapperStatusServerResponse;
 import io.github.messycraft.localhostbridgecore.api.LocalhostBridgeCoreAPIProvider;
 import io.github.messycraft.localhostbridgecore.bukkit.impl.ListenerManagerBukkitImpl;
 import io.github.messycraft.localhostbridgecore.bukkit.util.SimpleUtil;
@@ -42,6 +43,11 @@ public class MessageReceiveListener extends SimplePacketListenerAbstract {
                 dataSB.append(reqStr[i]);
             }
             String data = dataSB.toString();
+            if (namespace.isEmpty()) {
+                SimpleUtil.debug("Receive -> Hello " + seq);
+                event.getUser().sendPacketSilently(new WrapperStatusServerResponse("{\"d\": \"Hello\"}"));
+                return;
+            }
             SimpleUtil.debug(String.format("Receive -> {%s, %s, %s, %s, %s}", unique, namespace, needReply, seq, data));
             ((ListenerManagerBukkitImpl) LocalhostBridgeCoreAPIProvider.getAPI().getListenerManager()).call(unique, namespace, seq, data, needReply, event.getUser());
         }

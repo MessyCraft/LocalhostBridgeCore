@@ -34,6 +34,21 @@ public class LChannel {
         });
     }
 
+    /**
+     * 发送Hello消息
+     * @param nanos 回调，包含延迟，单位纳秒
+     */
+    public void sendHello(Consumer<Long> nanos) {
+        if (!valid) {
+            throw new IllegalStateException("valid == false");
+        }
+        SimpleUtil.runAsyncAsLBC(() -> {
+            String seq = UUID.randomUUID().toString().substring(0, 6);
+            long begin = System.nanoTime();
+            ServerListPingUtil.sendCustomData(this, "", "", true, seq, (s) -> nanos.accept(System.nanoTime() - begin), null);
+        });
+    }
+
     public void increasePingFailCount() {
         pingFailCount++;
     }

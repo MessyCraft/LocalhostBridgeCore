@@ -105,7 +105,9 @@ public final class HttpClientUtil {
      * @param target 目标频道，为null时代表所有
      * @return 键表示目标频道名，值表示对应延时毫秒数(-1表示不可达)
      * @throws RuntimeException if {@link Bukkit#isPrimaryThread()} be <tt>true</tt>
+     * @deprecated 蠢人灵机一动，然而多余的设计，连接端不需要主动发起延迟测试
      */
+    @Deprecated
     public static Map<String, Integer> hello(String target) throws RuntimeException {
         if (Bukkit.isPrimaryThread()) {
             throw new RuntimeException("Send hello ping in primary thread");

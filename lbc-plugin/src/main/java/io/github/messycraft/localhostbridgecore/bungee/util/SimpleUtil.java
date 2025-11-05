@@ -56,7 +56,7 @@ public final class SimpleUtil {
     }
 
     public static boolean nameMatches(String test) {
-        return NAME_PATTERN.matcher(test).matches();
+        return test != null && !test.isEmpty() && NAME_PATTERN.matcher(test).matches();
     }
 
     public static void debug(String text) {

@@ -67,7 +67,7 @@ public final class ServerListPingUtil {
                             return;
                         }
                         resp = new Gson().fromJson(readString(packetIn), JsonObject.class).get("d").getAsString();
-                        SimpleUtil.debug(resp);
+                        SimpleUtil.debug("Response -> " + resp + " " + logSuffix);
                     }
                 }
             }
@@ -127,8 +127,11 @@ public final class ServerListPingUtil {
     }
 
     private static String spawnHeaders(String unique, String namespace, boolean needReply, String seq) {
-        if (!SimpleUtil.nameMatches(unique) || !SimpleUtil.nameMatches(namespace)) {
-            throw new IllegalArgumentException("unique or namespace contains illegal characters");
+        if (!SimpleUtil.nameMatches(unique)) {
+            throw new IllegalArgumentException("unique contains illegal characters");
+        }
+        if ((namespace == null || !namespace.isEmpty()) && SimpleUtil.nameMatches(namespace)) {
+            throw new IllegalArgumentException("namespace contains illegal characters");
         }
         return String.format("LBC$%s$%s$%s$%s$", unique, namespace, needReply ? "1" : "0", seq);
     }
