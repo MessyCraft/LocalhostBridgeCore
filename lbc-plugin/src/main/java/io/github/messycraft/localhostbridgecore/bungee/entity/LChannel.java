@@ -36,7 +36,7 @@ public class LChannel {
 
     /**
      * 发送Hello消息
-     * @param nanos 回调，包含延迟，单位纳秒
+     * @param nanos 回调，单位纳秒 (若失败则无回调，自行限制超时时长即可)
      */
     public void sendHello(Consumer<Long> nanos) {
         if (!valid) {

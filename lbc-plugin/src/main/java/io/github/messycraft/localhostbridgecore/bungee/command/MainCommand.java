@@ -48,6 +48,17 @@ public class MainCommand extends Command implements TabExecutor {
             return;
         }
         if (subcommand.equalsIgnoreCase("hello")) {
+            if (args.length == 1) {
+                //
+            }
+            else if (args.length == 2) {
+                //
+            }
+            else {
+                sendWrongArguments(sender);
+                return;
+            }
+            // TODO 11/6
             return;
         }
         if (subcommand.equalsIgnoreCase("restart")) {
