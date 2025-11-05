@@ -29,7 +29,7 @@ public final class ServerListPingUtil {
             return;
         }
         SimpleUtil.debug(String.format("Send -> {%s, %s, %s, %s, %s}", unique, namespace, needReply, seq, data));
-        boolean connected = false, noReplyTag = false;
+        boolean connected = false;
         String resp = null;
         try (Socket socket = new Socket()) {
             socket.connect(new InetSocketAddress("127.0.0.1", port), Properties.TIMEOUT);
@@ -75,17 +75,18 @@ public final class ServerListPingUtil {
             if (connected && needReply) {
                 SimpleUtil.debug((ex instanceof SocketTimeoutException ? "Send [REPLY TIMEOUT]" : "Send [CLOSED WITHOUT REPLY]") + logSuffix);
                 channel.increaseSessionExpireCount();
-                noReplyTag = true;
             }
             else {
                 SimpleUtil.debug("Send [FAILURE]" + logSuffix);
                 channel.increasePingFailCount();
             }
         }
-        if (reply != null && resp != null) {
-            reply.accept(resp);
+        if (resp != null) {
+            if (reply != null) {
+                reply.accept(resp);
+            }
         }
-        else if (noReplyTag && noReply != null) {
+        else if (noReply != null) {
             noReply.run();
         }
     }

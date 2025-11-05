@@ -49,7 +49,7 @@ public interface LocalhostBridgeCoreAPI {
      * @param namespace 命名空间
      * @param body 消息主体
      * @param reply 回调，包含一条回复
-     * @param noReply (可选)等待超时后触发
+     * @param noReply (可选)等待超时后无回复或连接失败时触发
      */
     void sendForReply(String channel, String namespace, String body, Consumer<String> reply, Runnable noReply);
 
