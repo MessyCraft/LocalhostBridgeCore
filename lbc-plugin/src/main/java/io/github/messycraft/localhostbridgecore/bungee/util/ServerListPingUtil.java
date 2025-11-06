@@ -67,7 +67,7 @@ public final class ServerListPingUtil {
                             return;
                         }
                         resp = new Gson().fromJson(readString(packetIn), JsonObject.class).get("d").getAsString();
-                        SimpleUtil.debug("Response -> " + resp + " " + logSuffix);
+                        SimpleUtil.debug("Response " + logSuffix + " -> " + resp);
                     }
                 }
             }

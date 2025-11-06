@@ -17,7 +17,7 @@ public class LBCAPIBukkitImpl implements LocalhostBridgeCoreAPI {
 
     @Override
     public List<String> getRegisteredChannels() {
-        HttpClientUtil.ResponseStruct resp = HttpClientUtil.doPost("/list", null, SimpleUtil.getUnique());
+        HttpClientUtil.ResponseStruct resp = HttpClientUtil.doPost("/list", null, null, SimpleUtil.getUnique());
         return resp.code == 200 && resp.data != null ? new ArrayList<>(Arrays.asList(resp.data.split("\\$"))) : null;
     }
 
@@ -28,17 +28,23 @@ public class LBCAPIBukkitImpl implements LocalhostBridgeCoreAPI {
 
     @Override
     public void send(String channel, String namespace, String body) {
-
+        if (!SimpleUtil.nameMatches(channel) || !SimpleUtil.nameMatches(namespace)) {
+            throw new IllegalArgumentException("unique or namespace contains illegal characters");
+        }
+        HttpClientUtil.sendDataAsync(channel, namespace, body, false, null, null);
     }
 
     @Override
     public void sendForReply(String channel, String namespace, String body, Consumer<String> reply) {
-
+        sendForReply(channel, namespace, body, reply, null);
     }
 
     @Override
     public void sendForReply(String channel, String namespace, String body, Consumer<String> reply, Runnable noReply) {
-
+        if (!SimpleUtil.nameMatches(channel) || !SimpleUtil.nameMatches(namespace)) {
+            throw new IllegalArgumentException("unique or namespace contains illegal characters");
+        }
+        HttpClientUtil.sendDataAsync(channel, namespace, body, true, reply, noReply);
     }
 
     @Override

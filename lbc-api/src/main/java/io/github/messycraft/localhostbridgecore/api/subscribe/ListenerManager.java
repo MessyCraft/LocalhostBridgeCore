@@ -10,9 +10,9 @@ public interface ListenerManager {
      *
      * @param namespaces 订阅的命名空间，如果为空则不会收到任何内容。
      * @throws IllegalArgumentException 任意参数为<tt>null</tt>
-     * @see ListenerManager#unsubscribe(String)
-     * @see ListenerManager#unsubscribe(ChannelListener, String)
-     * @see ListenerManager#unregister(ChannelListener)
+     * @see #unsubscribe(String)
+     * @see #unsubscribe(ChannelListener, String)
+     * @see #unregister(ChannelListener)
      */
     void subscribe(ChannelListener listener, String... namespaces);
 

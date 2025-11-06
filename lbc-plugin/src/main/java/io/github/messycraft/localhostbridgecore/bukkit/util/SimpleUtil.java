@@ -42,8 +42,8 @@ public final class SimpleUtil {
         return LocalhostBridgeCore.getInstance().getConfig().getInt("timeout", 50);
     }
 
-    public static int getSessionLifetime() {
-        return LocalhostBridgeCore.getInstance().getConfig().getInt("session-lifetime", 500);
+    public static int getReadTimeout() {
+        return LocalhostBridgeCore.getInstance().getConfig().getInt("read-timeout", 10000);
     }
 
 }

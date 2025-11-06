@@ -36,7 +36,7 @@ public final class HttpServerManager {
 
             });
             server.createContext("/send", httpExchange -> {
-
+                // TODO 11/7
             });
             server.createContext("/register", HttpServerManager::handleRegister);
             server.createContext("/list", HttpServerManager::handleGetList);
