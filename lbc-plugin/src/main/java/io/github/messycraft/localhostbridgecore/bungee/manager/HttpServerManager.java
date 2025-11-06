@@ -32,7 +32,6 @@ public final class HttpServerManager {
             logger.info("Start server on 127.0.0.1:" + port);
             server = HttpServer.create(new InetSocketAddress("127.0.0.1", port), 0);
             server.setExecutor(null);
-            server.createContext("/hello", HttpServerManager::handleHello);
             server.createContext("/broadcast", httpExchange -> {
 
             });
@@ -45,6 +44,7 @@ public final class HttpServerManager {
             startMillis = System.currentTimeMillis();
             logger.info("--------------------");
         } catch (IOException ex) {
+            server = null;
             logger.log(Level.SEVERE, "HttpServerUtil$start", ex);
             logger.severe("启动未完成, 这可能是因为端口被占用等因素导致的, 可稍后使用\"lbc restart\"重试.");
         }
@@ -133,10 +133,6 @@ public final class HttpServerManager {
             return;
         }
         closeWithBody(200, "BC$" + String.join("$", ChannelRegistrationUtil.getRegisteredChannel().keySet()), httpExchange);
-    }
-
-    private static void handleHello(HttpExchange httpExchange) {
-        // TODO
     }
 
     private static String getHeaderValue(Headers headers, String key) {
