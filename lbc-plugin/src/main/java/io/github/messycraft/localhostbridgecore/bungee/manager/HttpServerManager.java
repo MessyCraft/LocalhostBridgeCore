@@ -35,9 +35,7 @@ public final class HttpServerManager {
             server.createContext("/broadcast", httpExchange -> {
 
             });
-            server.createContext("/send", httpExchange -> {
-                // TODO 11/7
-            });
+            server.createContext("/send", HttpServerManager::handleDataReceive);
             server.createContext("/register", HttpServerManager::handleRegister);
             server.createContext("/list", HttpServerManager::handleGetList);
             server.start();
@@ -87,6 +85,28 @@ public final class HttpServerManager {
         exchange.close();
     }
 
+    private static void handleDataReceive(HttpExchange httpExchange) throws IOException {
+        if (!httpExchange.getRequestMethod().equals("POST")) {
+            closeWithoutBody(405, httpExchange);
+            return;
+        }
+        Headers headers = httpExchange.getRequestHeaders();
+        if (!accessHeaders(headers)) {
+            closeWithoutBody(403, httpExchange);
+            return;
+        }
+        String seq = getHeaderValue(headers, "seq");
+        String namespace = getHeaderValue(headers, "namespace");
+        String target = getHeaderValue(headers, "target");
+        if (!SimpleUtil.nameMatches(namespace) || !SimpleUtil.nameMatches(target)) {
+            closeWithoutBody(400, httpExchange);
+            return;
+        }
+        String data = readFirstLine(httpExchange.getRequestBody());
+        // TODO 11/10
+        closeWithBody(200, "BC$" + String.join("$", ChannelRegistrationUtil.getRegisteredChannel().keySet()), httpExchange);
+    }
+
     private static void handleRegister(HttpExchange httpExchange) throws IOException {
         if (!httpExchange.getRequestMethod().equals("POST")) {
             closeWithoutBody(405, httpExchange);
@@ -99,10 +119,6 @@ public final class HttpServerManager {
         Headers headers = httpExchange.getRequestHeaders();
         String unique = getHeaderValue(headers, "unique");
         String port = getHeaderValue(headers, "port");
-        if (unique == null || port == null) {
-            closeWithoutBody(400, httpExchange);
-            return;
-        }
         if (!SimpleUtil.nameMatches(unique) || !SimpleUtil.nameMatches(port)) {
             closeWithoutBody(400, httpExchange);
             return;

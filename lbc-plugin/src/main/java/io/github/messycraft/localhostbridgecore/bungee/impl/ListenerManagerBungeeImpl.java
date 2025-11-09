@@ -5,12 +5,18 @@ import io.github.messycraft.localhostbridgecore.api.subscribe.ListenerManager;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.SynchronousQueue;
+import java.util.function.Consumer;
 
 public class ListenerManagerBungeeImpl implements ListenerManager {
 
     private final Map<String, PriorityQueue<ChannelListener>> listeners = new ConcurrentHashMap<>();
 
-    public void call(String from, String namespace, String seq, String data, boolean needReply) {
+    public void call(String from, String namespace, String seq, String data, boolean needReply, SynchronousQueue<String> reply) {
+        // TODO sth
+    }
+
+    public void callSelf(String namespace, String seq, String data, boolean needReply, Consumer<String> reply) {
         // TODO sth
     }
 

@@ -8,6 +8,7 @@ import io.github.messycraft.localhostbridgecore.bungee.util.SimpleUtil;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -32,8 +33,8 @@ public class LBCAPIBungeeImpl implements LocalhostBridgeCoreAPI {
             throw new IllegalArgumentException("unique or namespace contains illegal characters");
         }
         if ("BC".equals(channel)) {
-            // TODO: special handle...
-
+            String seq = UUID.randomUUID().toString().substring(0, 6);
+            SimpleUtil.runAsyncAsLBC(() -> ((ListenerManagerBungeeImpl) listenerManager).callSelf(namespace, seq, body, false, null));
             return;
         }
         LChannel c = ChannelRegistrationUtil.getRegisteredChannel().get(channel);
@@ -53,8 +54,11 @@ public class LBCAPIBungeeImpl implements LocalhostBridgeCoreAPI {
             throw new IllegalArgumentException("unique or namespace contains illegal characters");
         }
         if ("BC".equals(channel)) {
-            // TODO: special handle...
-
+            String seq = UUID.randomUUID().toString().substring(0, 6);
+            SimpleUtil.runAsyncAsLBC(() -> {
+                ((ListenerManagerBungeeImpl) listenerManager).callSelf(namespace, seq, body, true, reply);
+                // TODO timeout
+            });
             return;
         }
         LChannel c = ChannelRegistrationUtil.getRegisteredChannel().get(channel);
