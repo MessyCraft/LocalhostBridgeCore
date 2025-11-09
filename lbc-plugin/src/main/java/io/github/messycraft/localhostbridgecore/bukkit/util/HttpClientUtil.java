@@ -55,7 +55,7 @@ public final class HttpClientUtil {
             conn.setRequestProperty("port", String.valueOf(Bukkit.getPort()));
             conn.setRequestProperty("seq", seq);
             if (SimpleUtil.nameMatches(namespace)) conn.setRequestProperty("namespace", namespace);
-            if (SimpleUtil.nameMatches(target)) conn.setRequestProperty("target", namespace);
+            if (SimpleUtil.nameMatches(target)) conn.setRequestProperty("target", target);
 
             if (data != null) {
                 byte[] writeBytes = data.getBytes();
