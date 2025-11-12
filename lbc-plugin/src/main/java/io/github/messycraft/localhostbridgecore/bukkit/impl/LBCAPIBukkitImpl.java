@@ -17,7 +17,7 @@ public class LBCAPIBukkitImpl implements LocalhostBridgeCoreAPI {
 
     @Override
     public List<String> getRegisteredChannels() {
-        HttpClientUtil.ResponseStruct resp = HttpClientUtil.doPost("/list", null, null, SimpleUtil.getUnique());
+        HttpClientUtil.ResponseStruct resp = HttpClientUtil.doPost("/list", null, null, null);
         return resp.code == 200 && resp.data != null ? new ArrayList<>(Arrays.asList(resp.data.split("\\$"))) : null;
     }
 
