@@ -1,6 +1,7 @@
 package io.github.messycraft.localhostbridgecore.bungee.impl;
 
 import io.github.messycraft.localhostbridgecore.api.subscribe.Replyable;
+import io.github.messycraft.localhostbridgecore.bungee.Properties;
 import io.github.messycraft.localhostbridgecore.bungee.util.SimpleUtil;
 
 import java.util.function.Consumer;
@@ -35,6 +36,7 @@ public class ReplyableBungeeImpl implements Replyable {
 
         private final Consumer<String> consumer;
         private final String logSuffix;
+        private final long createTime = System.currentTimeMillis();
         private boolean valid = true;
 
         Own(Consumer<String> consumer, String seq) {
@@ -47,7 +49,7 @@ public class ReplyableBungeeImpl implements Replyable {
             if (consumer == null) {
                 throw new UnsupportedOperationException();
             }
-            if (!valid) {
+            if (!valid || System.currentTimeMillis() - createTime > Properties.SESSION_LIFETIME) {
                 return false;
             }
             valid = false;

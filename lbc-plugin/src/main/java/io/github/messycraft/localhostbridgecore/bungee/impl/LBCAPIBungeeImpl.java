@@ -55,10 +55,7 @@ public class LBCAPIBungeeImpl implements LocalhostBridgeCoreAPI {
         }
         if ("BC".equals(channel)) {
             String seq = UUID.randomUUID().toString().substring(0, 6);
-            SimpleUtil.runAsyncAsLBC(() -> {
-                ((ListenerManagerBungeeImpl) listenerManager).callSelf(namespace, seq, body, true, reply);
-                // TODO timeout
-            });
+            SimpleUtil.runAsyncAsLBC(() -> ((ListenerManagerBungeeImpl) listenerManager).callSelf(namespace, seq, body, true, reply));
             return;
         }
         LChannel c = ChannelRegistrationUtil.getRegisteredChannel().get(channel);
