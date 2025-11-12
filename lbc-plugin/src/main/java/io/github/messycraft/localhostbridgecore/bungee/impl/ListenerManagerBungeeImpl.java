@@ -2,22 +2,36 @@ package io.github.messycraft.localhostbridgecore.bungee.impl;
 
 import io.github.messycraft.localhostbridgecore.api.subscribe.ChannelListener;
 import io.github.messycraft.localhostbridgecore.api.subscribe.ListenerManager;
+import io.github.messycraft.localhostbridgecore.api.subscribe.Replyable;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.SynchronousQueue;
 import java.util.function.Consumer;
 
 public class ListenerManagerBungeeImpl implements ListenerManager {
 
     private final Map<String, PriorityQueue<ChannelListener>> listeners = new ConcurrentHashMap<>();
 
-    public void call(String from, String namespace, String seq, String data, boolean needReply, SynchronousQueue<String> reply) {
-        // TODO sth
+    public String call(String from, String namespace, String seq, String data, boolean needReply) {
+        PriorityQueue<ChannelListener> q = listeners.get(namespace);
+        String[] ret = new String[1];
+        Replyable replyable = new ReplyableBungeeImpl(needReply ? ret : null, seq);
+        if (q != null) {
+            for (ChannelListener listener : q) {
+                listener.onMessageReceive(from, namespace, seq, data, needReply, replyable);
+            }
+        }
+        return ret[0];
     }
 
     public void callSelf(String namespace, String seq, String data, boolean needReply, Consumer<String> reply) {
-        // TODO sth
+        PriorityQueue<ChannelListener> q = listeners.get(namespace);
+        Replyable replyable = new ReplyableBungeeImpl.Own(needReply ? reply : null, seq);
+        if (q != null) {
+            for (ChannelListener listener : q) {
+                listener.onMessageReceive("BC", namespace, seq, data, needReply, replyable);
+            }
+        }
     }
 
     @Override

@@ -6,15 +6,18 @@ import com.github.retrooper.packetevents.wrapper.status.server.WrapperStatusServ
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import io.github.messycraft.localhostbridgecore.api.subscribe.Replyable;
+import io.github.messycraft.localhostbridgecore.bukkit.util.SimpleUtil;
 
 @SuppressWarnings("SpellCheckingInspection")
 public class ReplyableBukkitImpl implements Replyable {
 
     private final User user;
+    private final String logSuffix;
     private boolean valid = true;
 
-    ReplyableBukkitImpl(User user) {
+    ReplyableBukkitImpl(User user, String seq) {
         this.user = user;
+        this.logSuffix = "[" + seq + "]";
     }
 
     @Override
@@ -25,6 +28,7 @@ public class ReplyableBukkitImpl implements Replyable {
         if (!valid || !ChannelHelper.isOpen(user.getChannel())) {
             return false;
         }
+        SimpleUtil.debug("Reply " + logSuffix + " -> " + content);
         user.sendPacketSilently(new WrapperStatusServerResponse(wrapData(content)));
         valid = false;
         return true;

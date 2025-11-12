@@ -2,8 +2,10 @@ package io.github.messycraft.localhostbridgecore.bungee.manager;
 
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
-import io.github.messycraft.localhostbridgecore.bungee.Properties;
 import com.sun.net.httpserver.HttpServer;
+import io.github.messycraft.localhostbridgecore.api.LocalhostBridgeCoreAPIProvider;
+import io.github.messycraft.localhostbridgecore.bungee.Properties;
+import io.github.messycraft.localhostbridgecore.bungee.impl.ListenerManagerBungeeImpl;
 import io.github.messycraft.localhostbridgecore.bungee.util.ChannelRegistrationUtil;
 import io.github.messycraft.localhostbridgecore.bungee.util.SimpleUtil;
 import lombok.Getter;
@@ -95,16 +97,34 @@ public final class HttpServerManager {
             closeWithoutBody(403, httpExchange);
             return;
         }
+        String from = getHeaderValue(headers, "unique");
         String seq = getHeaderValue(headers, "seq");
         String namespace = getHeaderValue(headers, "namespace");
         String target = getHeaderValue(headers, "target");
+        boolean needReply = "reply".equals(headers.getFirst("extra"));
         if (!SimpleUtil.nameMatches(namespace) || !SimpleUtil.nameMatches(target)) {
             closeWithoutBody(400, httpExchange);
             return;
         }
         String data = readFirstLine(httpExchange.getRequestBody());
-        // TODO 11/10
-        closeWithBody(200, "BC$" + String.join("$", ChannelRegistrationUtil.getRegisteredChannel().keySet()), httpExchange);
+        if (data == null) {
+            closeWithoutBody(400, httpExchange);
+            return;
+        }
+        if (target.equals("BC")) {
+            SimpleUtil.debug(String.format("Receive -> {%s, %s, %s, %s, %s}", from, namespace, needReply, seq, data));
+            String ret = ((ListenerManagerBungeeImpl) LocalhostBridgeCoreAPIProvider.getAPI().getListenerManager()).call(from, namespace, seq, data, needReply);
+            if (ret != null) {
+                closeWithBody(200, ret, httpExchange);
+            }
+            else {
+                closeWithoutBody(200, httpExchange);
+            }
+            return;
+        }
+        SimpleUtil.debug(String.format("Forward " + target + " -> {%s, %s, %s, %s, %s}", from, namespace, needReply, seq, data));
+        // TODO: Forward
+        closeWithoutBody(502, httpExchange);
     }
 
     private static void handleRegister(HttpExchange httpExchange) throws IOException {

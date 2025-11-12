@@ -27,9 +27,10 @@ public final class HttpClientUtil {
     private HttpClientUtil() {}
 
     /**
+     * @param extra 额外的信息，会作为列表加入Header中
      * @throws IllegalArgumentException if {@code context} be null
      */
-    public static ResponseStruct doPost(String context, String target, String namespace, String data) {
+    public static ResponseStruct doPost(String context, String target, String namespace, String data, String... extra) {
         String seq = UUID.randomUUID().toString().substring(0, 6);
         HttpURLConnection conn = null;
         BufferedReader reader = null;
@@ -54,6 +55,9 @@ public final class HttpClientUtil {
             conn.setRequestProperty("unique", SimpleUtil.getUnique());
             conn.setRequestProperty("port", String.valueOf(Bukkit.getPort()));
             conn.setRequestProperty("seq", seq);
+            for (String ext : extra) {
+                conn.addRequestProperty("extra", ext);
+            }
             if (SimpleUtil.nameMatches(namespace)) conn.setRequestProperty("namespace", namespace);
             if (SimpleUtil.nameMatches(target)) conn.setRequestProperty("target", target);
 
@@ -109,7 +113,7 @@ public final class HttpClientUtil {
 
     public static void sendDataAsync(String target, String namespace, String body, boolean needReply, Consumer<String> reply, Runnable fail) {
         Bukkit.getScheduler().runTaskAsynchronously(LocalhostBridgeCore.getInstance(), () -> {
-            ResponseStruct resp = doPost("/send", target, namespace, body);
+            ResponseStruct resp = doPost("/send", target, namespace, body, needReply ? "reply" : "none");
             String logSuffix = "[" + resp.seq + "]";
             SimpleUtil.debug(String.format("Send -> {%s, %s, %s, %s, %s}", target, namespace, needReply, resp.seq, body));
             if (resp.code == 200) {
@@ -134,6 +138,7 @@ public final class HttpClientUtil {
                 case 400: SimpleUtil.debug("Send [WRONG ARG]" + logSuffix); break;
                 case 403: SimpleUtil.debug("Send [NOT PERMITTED]" + logSuffix); break;
                 default: SimpleUtil.debug("Send [ERROR UNEXPECTED]" + logSuffix); break;
+                // TODO: Add WARNING debug level in config, default enable show
             }
             if (fail != null) {
                 fail.run();

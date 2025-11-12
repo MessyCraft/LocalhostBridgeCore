@@ -3,6 +3,7 @@ package io.github.messycraft.localhostbridgecore.bukkit.impl;
 import com.github.retrooper.packetevents.protocol.player.User;
 import io.github.messycraft.localhostbridgecore.api.subscribe.ChannelListener;
 import io.github.messycraft.localhostbridgecore.api.subscribe.ListenerManager;
+import io.github.messycraft.localhostbridgecore.api.subscribe.Replyable;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -13,9 +14,10 @@ public class ListenerManagerBukkitImpl implements ListenerManager {
 
     public void call(String from, String namespace, String seq, String data, boolean needReply, User packetUser) {
         PriorityQueue<ChannelListener> q = listeners.get(namespace);
+        Replyable replyable = new ReplyableBukkitImpl(needReply ? packetUser : null, seq);
         if (q != null) {
             for (ChannelListener listener : q) {
-                listener.onMessageReceive(from, namespace, seq, data, needReply, new ReplyableBukkitImpl(needReply ? packetUser : null));
+                listener.onMessageReceive(from, namespace, seq, data, needReply, replyable);
             }
         }
     }
