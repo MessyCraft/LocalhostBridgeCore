@@ -39,6 +39,7 @@ public class MainCommand extends Command implements TabExecutor {
             SimpleUtil.sendTextMessage(sender, "&b运行状态: " + (HttpServerManager.isRunning() ? "&a&lRunning" : "&c&lOffline"));
             SimpleUtil.sendTextMessage(sender, "&b运行时间: " + (HttpServerManager.isRunning() ? String.format("&e%.2f hours", (System.currentTimeMillis() - HttpServerManager.getStartMillis()) / (1000 * 60 * 60.0)) : "&7N/A"));
             SimpleUtil.sendTextMessage(sender, "&b调试模式: " + (Properties.DEBUG ? "&e是" : "&e否"));
+            SimpleUtil.sendTextMessage(sender, "&b展示警告: " + (Properties.SHOW_WARNINGS ? "&e是" : "&e否"));
             SimpleUtil.sendTextMessage(sender, "&b已注册频道:");
             SimpleUtil.sendRichMessage(sender, "&7- &f&lBC&7:" + Properties.BIND_PORT + " &3本端", "点击测试频道连接: BC", "/lbc hello BC");
             for (LChannel c : ChannelRegistrationUtil.getRegisteredChannel().values()) {

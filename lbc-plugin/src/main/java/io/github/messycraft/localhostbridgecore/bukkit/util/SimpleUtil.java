@@ -18,6 +18,15 @@ public final class SimpleUtil {
         }
     }
 
+    public static void runtimeWarning(String text) {
+        if (
+                LocalhostBridgeCore.getInstance().getConfig().getBoolean("show-warnings", true) ||
+                LocalhostBridgeCore.getInstance().getConfig().getBoolean("debug")
+        ) {
+            LocalhostBridgeCore.getInstance().getLogger().warning("[!] " + text);
+        }
+    }
+
     public static String color(String s) {
         return ChatColor.translateAlternateColorCodes('&', s);
     }

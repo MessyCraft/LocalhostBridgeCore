@@ -20,7 +20,6 @@ import java.util.function.Consumer;
 
 public final class HttpClientUtil {
 
-    // TODO: get timeout value from bungee
     private static int CONNECT_TIMEOUT = 50;
     private static int READ_TIMEOUT = 10000;
 
@@ -125,7 +124,7 @@ public final class HttpClientUtil {
                         }
                     }
                     else {
-                        SimpleUtil.debug("Response [EMPTY]" + logSuffix);
+                        SimpleUtil.runtimeWarning("Response [EMPTY]" + logSuffix);
                         if (fail != null) {
                             fail.run();
                         }
@@ -134,11 +133,10 @@ public final class HttpClientUtil {
                 return;
             }
             switch (resp.code) {
-                case -1: SimpleUtil.debug("Send [FAILURE]" + logSuffix); break;
-                case 400: SimpleUtil.debug("Send [WRONG ARG]" + logSuffix); break;
-                case 403: SimpleUtil.debug("Send [NOT PERMITTED]" + logSuffix); break;
-                default: SimpleUtil.debug("Send [ERROR UNEXPECTED]" + logSuffix); break;
-                // TODO: Add WARNING debug level in config, default enable show
+                case -1: SimpleUtil.runtimeWarning("Send [FAILURE]" + logSuffix); break;
+                case 400: SimpleUtil.runtimeWarning("Send [WRONG ARG]" + logSuffix); break;
+                case 403: SimpleUtil.runtimeWarning("Send [NOT PERMITTED]" + logSuffix); break;
+                default: SimpleUtil.runtimeWarning("Send [ERROR UNEXPECTED]" + logSuffix); break;
             }
             if (fail != null) {
                 fail.run();

@@ -65,4 +65,10 @@ public final class SimpleUtil {
         }
     }
 
+    public static void runtimeWarning(String text) {
+        if (Properties.SHOW_WARNINGS || Properties.DEBUG) {
+            LocalhostBridgeCore.getInstance().getLogger().warning("[!] " + text);
+        }
+    }
+
 }

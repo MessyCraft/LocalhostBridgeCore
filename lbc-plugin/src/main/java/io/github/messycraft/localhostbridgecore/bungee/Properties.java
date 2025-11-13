@@ -11,6 +11,7 @@ public class Properties {
     public static int TIMEOUT = -1;
     public static int SESSION_LIFETIME = -1;
     public static boolean DEBUG;
+    public static boolean SHOW_WARNINGS = true;
 
 
     public static void fromFile() {
@@ -19,6 +20,7 @@ public class Properties {
         TIMEOUT = YamlConfigurationUtil.getConfig().getInt("timeout", -1);
         SESSION_LIFETIME = YamlConfigurationUtil.getConfig().getInt("session-lifetime", -1);
         DEBUG = YamlConfigurationUtil.getConfig().getBoolean("debug", false);
+        SHOW_WARNINGS = YamlConfigurationUtil.getConfig().getBoolean("show-warnings", true);
     }
 
 }

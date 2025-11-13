@@ -25,7 +25,7 @@ public final class ServerListPingUtil {
         String unique = channel.getUnique();
         int port = channel.getPort();
         if (unique.length() + namespace.length() + data.length() + 15 > 255) {
-            SimpleUtil.debug(String.format("IGNORE TOO LONG -> {%s, %s, %s..., %s, %s}", unique, namespace, needReply, seq, data.substring(0, 20)));
+            SimpleUtil.runtimeWarning(String.format("IGNORE TOO LONG -> {%s, %s, %s..., %s, %s}", unique, namespace, needReply, seq, data.substring(0, 20)));
             return;
         }
         SimpleUtil.debug(String.format("Send -> {%s, %s, %s, %s, %s}", unique, namespace, needReply, seq, data));
@@ -63,7 +63,7 @@ public final class ServerListPingUtil {
                     try (DataInputStream packetIn = new DataInputStream(new ByteArrayInputStream(packetData))) {
                         int packetId = readVarInt(packetIn);
                         if (packetId != 0x00) {
-                            SimpleUtil.debug("Send [ERROR]" + logSuffix);
+                            SimpleUtil.runtimeWarning("Send [ERROR]" + logSuffix);
                             return;
                         }
                         resp = new Gson().fromJson(readString(packetIn), JsonObject.class).get("d").getAsString();
@@ -73,11 +73,11 @@ public final class ServerListPingUtil {
             }
         } catch (Exception ex) {
             if (connected && needReply) {
-                SimpleUtil.debug((ex instanceof SocketTimeoutException ? "Send [REPLY TIMEOUT]" : "Send [CLOSED WITHOUT REPLY]") + logSuffix);
+                SimpleUtil.runtimeWarning((ex instanceof SocketTimeoutException ? "Send [REPLY TIMEOUT]" : "Send [CLOSED WITHOUT REPLY]") + logSuffix);
                 channel.increaseSessionExpireCount();
             }
             else {
-                SimpleUtil.debug("Send [FAILURE]" + logSuffix);
+                SimpleUtil.runtimeWarning("Send [FAILURE]" + logSuffix);
                 channel.increasePingFailCount();
             }
         }

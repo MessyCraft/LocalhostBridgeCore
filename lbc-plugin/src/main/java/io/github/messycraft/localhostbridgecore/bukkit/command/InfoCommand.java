@@ -31,6 +31,7 @@ public class InfoCommand implements CommandExecutor {
             sender.sendMessage("连接状态: " + (channels != null));
             sender.sendMessage("频道列表: " + channels);
             sender.sendMessage("调试模式: " + plugin.getConfig().getBoolean("debug"));
+            sender.sendMessage("展示警告: " + plugin.getConfig().getBoolean("show-warnings", true));
             sender.sendMessage("");
         });
         return true;
