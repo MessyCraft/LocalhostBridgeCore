@@ -20,15 +20,19 @@ public final class ServerListPingUtil {
      * Do it async, please, or proxy may cause a lag.
      * @param channel 127.0.0.1:port
      */
-    public static void sendCustomData(LChannel channel, String namespace, String data, boolean needReply, String seq, Consumer<String> reply, Runnable noReply) {
+    public static void sendCustomData(String sender, LChannel channel, String namespace, String data, boolean needReply, String seq, Consumer<String> reply, Runnable noReply) {
         String logSuffix = "[" + seq + "]";
-        String unique = channel.getUnique();
         int port = channel.getPort();
-        if (unique.length() + namespace.length() + data.length() + 15 > 255) {
-            SimpleUtil.runtimeWarning(String.format("IGNORE TOO LONG -> {%s, %s, %s..., %s, %s}", unique, namespace, needReply, seq, data.substring(0, 20)));
+        if (sender.length() + namespace.length() + data.length() + 15 > 255) {
+            SimpleUtil.runtimeWarning(String.format("IGNORE TOO LONG -> {%s, %s, %s, %s, %s...}", sender, namespace, needReply, seq, data.substring(0, 20)));
+            if (noReply != null) {
+                noReply.run();
+            }
             return;
         }
-        SimpleUtil.debug(String.format("Send -> {%s, %s, %s, %s, %s}", unique, namespace, needReply, seq, data));
+        if (sender.equals("BC")) {
+            SimpleUtil.debug(String.format("Send " + channel.getUnique() + " -> {%s, %s, %s, %s, %s}", sender, namespace, needReply, seq, data));
+        }
         boolean connected = false;
         String resp = null;
         try (Socket socket = new Socket()) {
@@ -46,7 +50,7 @@ public final class ServerListPingUtil {
                 ) {
                     writeVarInt(handshake, 0x00);
                     writeVarInt(handshake, -1);
-                    writeString(handshake, spawnHeaders(unique, namespace, needReply, seq) + data);
+                    writeString(handshake, spawnHeaders(sender, namespace, needReply, seq) + data);
                     handshake.writeShort(port);
                     writeVarInt(handshake, 1);
                     handshake.flush();
@@ -67,7 +71,9 @@ public final class ServerListPingUtil {
                             return;
                         }
                         resp = new Gson().fromJson(readString(packetIn), JsonObject.class).get("d").getAsString();
-                        SimpleUtil.debug("Response " + logSuffix + " -> " + resp);
+                        if (sender.equals("BC")) {
+                            SimpleUtil.debug("Response " + logSuffix + " -> " + resp);
+                        }
                     }
                 }
             }
@@ -126,14 +132,14 @@ public final class ServerListPingUtil {
         return new String(bytes, StandardCharsets.UTF_8);
     }
 
-    private static String spawnHeaders(String unique, String namespace, boolean needReply, String seq) {
-        if (!SimpleUtil.nameMatches(unique)) {
-            throw new IllegalArgumentException("unique contains illegal characters");
+    private static String spawnHeaders(String sender, String namespace, boolean needReply, String seq) {
+        if (!SimpleUtil.nameMatches(sender)) {
+            throw new IllegalArgumentException("sender contains illegal characters");
         }
         if ((namespace == null || !namespace.isEmpty()) && SimpleUtil.nameMatches(namespace)) {
             throw new IllegalArgumentException("namespace contains illegal characters");
         }
-        return String.format("LBC$%s$%s$%s$%s$", unique, namespace, needReply ? "1" : "0", seq);
+        return String.format("LBC$%s$%s$%s$%s$", sender, namespace, needReply ? "1" : "0", seq);
     }
 
 }

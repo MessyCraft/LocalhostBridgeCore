@@ -136,6 +136,7 @@ public final class HttpClientUtil {
                 case -1: SimpleUtil.runtimeWarning("Send [FAILURE]" + logSuffix); break;
                 case 400: SimpleUtil.runtimeWarning("Send [WRONG ARG]" + logSuffix); break;
                 case 403: SimpleUtil.runtimeWarning("Send [NOT PERMITTED]" + logSuffix); break;
+                case 404: SimpleUtil.runtimeWarning("Send [TARGET NOT EXIST]" + logSuffix); break;
                 default: SimpleUtil.runtimeWarning("Send [ERROR UNEXPECTED]" + logSuffix); break;
             }
             if (fail != null) {

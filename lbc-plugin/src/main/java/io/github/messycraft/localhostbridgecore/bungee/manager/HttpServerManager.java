@@ -5,6 +5,7 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 import io.github.messycraft.localhostbridgecore.api.LocalhostBridgeCoreAPIProvider;
 import io.github.messycraft.localhostbridgecore.bungee.Properties;
+import io.github.messycraft.localhostbridgecore.bungee.entity.LChannel;
 import io.github.messycraft.localhostbridgecore.bungee.impl.ListenerManagerBungeeImpl;
 import io.github.messycraft.localhostbridgecore.bungee.util.ChannelRegistrationUtil;
 import io.github.messycraft.localhostbridgecore.bungee.util.SimpleUtil;
@@ -123,6 +124,12 @@ public final class HttpServerManager {
             return;
         }
         SimpleUtil.debug(String.format("Forward " + target + " -> {%s, %s, %s, %s, %s}", from, namespace, needReply, seq, data));
+        LChannel lChannel = ChannelRegistrationUtil.getRegisteredChannel().get(target);
+        if (lChannel == null) {
+            closeWithoutBody(404, httpExchange);
+            return;
+        }
+        assert from != null;
         // TODO: Forward
         closeWithoutBody(502, httpExchange);
     }

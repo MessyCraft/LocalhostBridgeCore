@@ -30,7 +30,7 @@ public class LChannel {
         }
         SimpleUtil.runAsyncAsLBC(() -> {
             String seq = UUID.randomUUID().toString().substring(0, 6);
-            ServerListPingUtil.sendCustomData(this, namespace, data, needReply, seq, reply, noReply);
+            ServerListPingUtil.sendCustomData("BC", this, namespace, data, needReply, seq, reply, noReply);
         });
     }
 
@@ -45,7 +45,7 @@ public class LChannel {
         SimpleUtil.runAsyncAsLBC(() -> {
             String seq = UUID.randomUUID().toString().substring(0, 6);
             long begin = System.nanoTime();
-            ServerListPingUtil.sendCustomData(this, "", "", true, seq, (s) -> nanos.accept(System.nanoTime() - begin), null);
+            ServerListPingUtil.sendCustomData("BC", this, "", "", true, seq, (s) -> nanos.accept(System.nanoTime() - begin), null);
         });
     }
 

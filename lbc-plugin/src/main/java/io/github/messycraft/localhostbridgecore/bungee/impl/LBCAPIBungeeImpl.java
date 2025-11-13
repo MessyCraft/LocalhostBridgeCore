@@ -41,6 +41,9 @@ public class LBCAPIBungeeImpl implements LocalhostBridgeCoreAPI {
         if (c != null) {
             c.sendChannelData(namespace, body, false, null, null);
         }
+        else {
+            SimpleUtil.runtimeWarning("Channel '" + channel + "' does not exist.");
+        }
     }
 
     @Override
@@ -61,6 +64,9 @@ public class LBCAPIBungeeImpl implements LocalhostBridgeCoreAPI {
         LChannel c = ChannelRegistrationUtil.getRegisteredChannel().get(channel);
         if (c != null) {
             c.sendChannelData(namespace, body, true, reply, noReply);
+        }
+        else {
+            SimpleUtil.runtimeWarning("Channel '" + channel + "' does not exist.");
         }
     }
 
