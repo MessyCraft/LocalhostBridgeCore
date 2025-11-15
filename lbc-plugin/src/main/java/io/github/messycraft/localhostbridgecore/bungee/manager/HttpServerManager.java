@@ -8,12 +8,14 @@ import io.github.messycraft.localhostbridgecore.bungee.Properties;
 import io.github.messycraft.localhostbridgecore.bungee.entity.LChannel;
 import io.github.messycraft.localhostbridgecore.bungee.impl.ListenerManagerBungeeImpl;
 import io.github.messycraft.localhostbridgecore.bungee.util.ChannelRegistrationUtil;
+import io.github.messycraft.localhostbridgecore.bungee.util.ServerListPingUtil;
 import io.github.messycraft.localhostbridgecore.bungee.util.SimpleUtil;
 import lombok.Getter;
 
 import java.io.*;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -130,8 +132,14 @@ public final class HttpServerManager {
             return;
         }
         assert from != null;
-        // TODO: Forward
-        closeWithoutBody(502, httpExchange);
+        AtomicReference<String> ret = new AtomicReference<>(null);
+        ServerListPingUtil.sendCustomData(from, lChannel, namespace, data, needReply, seq, ret::set, null);
+        if (ret.get() != null) {
+            closeWithBody(200, ret.get(), httpExchange);
+        }
+        else {
+            closeWithoutBody(200, httpExchange);
+        }
     }
 
     private static void handleRegister(HttpExchange httpExchange) throws IOException {
