@@ -51,14 +51,17 @@ public class MainCommand extends Command implements TabExecutor {
         }
         if (subcommand.equalsIgnoreCase("hello")) {
             if (args.length == 1) {
+                if (ChannelRegistrationUtil.getRegisteredChannel().isEmpty()) {
+                    SimpleUtil.sendTextMessage(sender, "&c发送失败: 你还没有任何可用频道!");
+                    return;
+                }
                 final int count = ChannelRegistrationUtil.getRegisteredChannel().size();
                 AtomicInteger completed = new AtomicInteger();
                 sendLine(sender);
                 for (LChannel c : ChannelRegistrationUtil.getRegisteredChannel().values()) {
                     SimpleUtil.runAsyncAsLBC(() -> {
                         long ping = c.sendHelloInCurrentThread();
-                        SimpleUtil.sendTextMessage(sender, "&7- &f&l" + c.getUnique() + "&7:" + Properties.BIND_PORT + (ping == -1 ? " &c超时" : String.format(" &e%.2fms", ping / 1000_000.0)));
-                        completed.getAndIncrement();
+                        SimpleUtil.sendTextMessage(sender, "&7- &f&l" + c.getUnique() + "&7:" + Properties.BIND_PORT + (ping == -1 ? " &c超时" : String.format(" &e%.2fms", ping / 1000_000.0)) + String.format("&3 (%d/%d)", completed.getAndIncrement(), count));
                         if (completed.get() == count) sendLine(sender);
                     });
                 }

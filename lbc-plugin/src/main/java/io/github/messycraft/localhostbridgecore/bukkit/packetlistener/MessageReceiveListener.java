@@ -29,7 +29,7 @@ public class MessageReceiveListener extends SimplePacketListenerAbstract {
                 return;
             }
             event.setCancelled(true);
-            String[] reqStr = hostname.split("\\$");
+            String[] reqStr = hostname.split("\\$", -1);
             if (reqStr.length < 6) {
                 return;
             }

@@ -77,7 +77,7 @@ public final class ServerListPingUtil {
                     }
                 }
             }
-        } catch (Exception ex) {
+        } catch (IOException ex) {
             if (connected && needReply) {
                 SimpleUtil.runtimeWarning((ex instanceof SocketTimeoutException ? "Send [REPLY TIMEOUT]" : "Send [CLOSED WITHOUT REPLY]") + logSuffix);
                 channel.increaseSessionExpireCount();
@@ -136,7 +136,7 @@ public final class ServerListPingUtil {
         if (!SimpleUtil.nameMatches(sender)) {
             throw new IllegalArgumentException("sender contains illegal characters");
         }
-        if ((namespace == null || !namespace.isEmpty()) && SimpleUtil.nameMatches(namespace)) {
+        if ((namespace == null || !namespace.isEmpty()) && !SimpleUtil.nameMatches(namespace)) {
             throw new IllegalArgumentException("namespace contains illegal characters");
         }
         return String.format("LBC$%s$%s$%s$%s$", sender, namespace, needReply ? "1" : "0", seq);
