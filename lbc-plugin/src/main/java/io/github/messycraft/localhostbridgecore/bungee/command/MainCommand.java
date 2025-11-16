@@ -61,7 +61,7 @@ public class MainCommand extends Command implements TabExecutor {
                 for (LChannel c : ChannelRegistrationUtil.getRegisteredChannel().values()) {
                     SimpleUtil.runAsyncAsLBC(() -> {
                         long ping = c.sendHelloInCurrentThread();
-                        SimpleUtil.sendTextMessage(sender, "&7- &f&l" + c.getUnique() + "&7:" + Properties.BIND_PORT + (ping == -1 ? " &c超时" : String.format(" &e%.2fms", ping / 1000_000.0)) + String.format("&3 (%d/%d)", completed.getAndIncrement(), count));
+                        SimpleUtil.sendTextMessage(sender, "&7- &f&l" + c.getUnique() + "&7:" + Properties.BIND_PORT + (ping == -1 ? " &c超时" : String.format(" &e%.2fms", ping / 1000_000.0)) + String.format("&3 (%d/%d)", completed.incrementAndGet(), count));
                         if (completed.get() == count) sendLine(sender);
                     });
                 }
