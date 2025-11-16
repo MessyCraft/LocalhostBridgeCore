@@ -15,6 +15,7 @@ import net.md_5.bungee.api.plugin.TabExecutor;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class MainCommand extends Command implements TabExecutor {
 
@@ -41,7 +42,7 @@ public class MainCommand extends Command implements TabExecutor {
             SimpleUtil.sendTextMessage(sender, "&b调试模式: " + (Properties.DEBUG ? "&e是" : "&e否"));
             SimpleUtil.sendTextMessage(sender, "&b展示警告: " + (Properties.SHOW_WARNINGS ? "&e是" : "&e否"));
             SimpleUtil.sendTextMessage(sender, "&b已注册频道:");
-            SimpleUtil.sendRichMessage(sender, "&7- &f&lBC&7:" + Properties.BIND_PORT + " &3本端", "点击测试频道连接: BC", "/lbc hello BC");
+            SimpleUtil.sendTextMessage(sender, "&7- &f&lBC&7:" + Properties.BIND_PORT + " &3本端");
             for (LChannel c : ChannelRegistrationUtil.getRegisteredChannel().values()) {
                 SimpleUtil.sendRichMessage(sender, "&7- &f&l" + c.getUnique() + "&7:" + c.getPort() + " &3连接失败次数[" + c.getPingFailCount() + "] 会话过期次数[" + c.getSessionExpireCount() + "]", "点击测试频道连接: " + c.getUnique(), "/lbc hello " + c.getUnique());
             }
@@ -50,16 +51,40 @@ public class MainCommand extends Command implements TabExecutor {
         }
         if (subcommand.equalsIgnoreCase("hello")) {
             if (args.length == 1) {
-                //
+                final int count = ChannelRegistrationUtil.getRegisteredChannel().size();
+                AtomicInteger completed = new AtomicInteger();
+                sendLine(sender);
+                for (LChannel c : ChannelRegistrationUtil.getRegisteredChannel().values()) {
+                    SimpleUtil.runAsyncAsLBC(() -> {
+                        long ping = c.sendHelloInCurrentThread();
+                        SimpleUtil.sendTextMessage(sender, "&7- &f&l" + c.getUnique() + "&7:" + Properties.BIND_PORT + (ping == -1 ? " &c超时" : String.format(" &e%.2fms", ping / 1000_000.0)));
+                        completed.getAndIncrement();
+                        if (completed.get() == count) sendLine(sender);
+                    });
+                }
             }
             else if (args.length == 2) {
-                //
+                if (args[1].equals("BC")) {
+                    sendLine(sender);
+                    SimpleUtil.sendTextMessage(sender, "&7- &f&lBC&7:" + Properties.BIND_PORT + " &3本端");
+                    sendLine(sender);
+                    return;
+                }
+                LChannel c = ChannelRegistrationUtil.getRegisteredChannel().get(args[1]);
+                if (c == null) {
+                    SimpleUtil.sendTextMessage(sender, "&c发送失败: 频道 " + args[1] + " 不存在");
+                    return;
+                }
+                SimpleUtil.runAsyncAsLBC(() -> {
+                    sendLine(sender);
+                    long ping = c.sendHelloInCurrentThread();
+                    SimpleUtil.sendTextMessage(sender, "&7- &f&l" + c.getUnique() + "&7:" + Properties.BIND_PORT + (ping == -1 ? " &c超时" : String.format(" &e%.2fms", ping / 1000_000.0)));
+                    sendLine(sender);
+                });
             }
             else {
                 sendWrongArguments(sender);
-                return;
             }
-            // TODO 11/6
             return;
         }
         if (subcommand.equalsIgnoreCase("restart")) {

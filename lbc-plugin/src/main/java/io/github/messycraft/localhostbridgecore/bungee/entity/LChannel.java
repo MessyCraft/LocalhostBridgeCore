@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 
 @Data
@@ -35,18 +36,18 @@ public class LChannel {
     }
 
     /**
-     * 发送Hello消息
-     * @param nanos 回调，单位纳秒 (若失败则无回调，自行限制超时时长即可)
+     * 发送Hello消息 (会阻塞线程)
+     * @return 延时，单位纳秒 (若超时则返回-1)
      */
-    public void sendHello(Consumer<Long> nanos) {
+    public long sendHelloInCurrentThread() {
         if (!valid) {
             throw new IllegalStateException("valid == false");
         }
-        SimpleUtil.runAsyncAsLBC(() -> {
-            String seq = UUID.randomUUID().toString().substring(0, 6);
-            long begin = System.nanoTime();
-            ServerListPingUtil.sendCustomData("BC", this, "", "", true, seq, (s) -> nanos.accept(System.nanoTime() - begin), null);
-        });
+        String seq = UUID.randomUUID().toString().substring(0, 6);
+        long begin = System.nanoTime();
+        AtomicLong ret = new AtomicLong(-1);
+        ServerListPingUtil.sendCustomData("BC", this, "", "", true, seq, s -> ret.set(System.nanoTime() - begin), null);
+        return ret.get();
     }
 
     public void increasePingFailCount() {

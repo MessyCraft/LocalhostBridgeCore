@@ -43,7 +43,7 @@ public class MessageReceiveListener extends SimplePacketListenerAbstract {
                 dataSB.append(reqStr[i]);
             }
             String data = dataSB.toString();
-            if (namespace.isEmpty()) {
+            if (namespace.isEmpty() && needReply) {
                 event.getUser().sendPacketSilently(new WrapperStatusServerResponse("{\"d\": \"Hello\"}"));
                 SimpleUtil.debug("Receive -> Hello " + seq);
                 return;
