@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
+import java.util.logging.Level;
 
 public final class HttpClientUtil {
 
@@ -68,6 +69,7 @@ public final class HttpClientUtil {
                 os.flush();
                 os.close();
             }
+
             int code = conn.getResponseCode();
             if (code == 200) {
                 reader = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8));
@@ -87,7 +89,7 @@ public final class HttpClientUtil {
                     reader.close();
                 }
                 catch (Exception e) {
-                    e.printStackTrace();
+                    LocalhostBridgeCore.getInstance().getLogger().log(Level.SEVERE, "bufferedReader.close()", e);
                 }
             }
             if (conn != null) {
@@ -141,6 +143,27 @@ public final class HttpClientUtil {
             }
             if (fail != null) {
                 fail.run();
+            }
+        });
+    }
+
+    public static void sendBroadcastAsync(String namespace, String body, boolean needReply, Consumer<Map<String, String>> reply) {
+        Bukkit.getScheduler().runTaskAsynchronously(LocalhostBridgeCore.getInstance(), () -> {
+            ResponseStruct resp = doPost("/broadcast", null, namespace, body, needReply ? "reply" : "none");
+            String logSuffix = "[" + resp.seq + "]";
+            SimpleUtil.debug(String.format("Broadcast -> {(FROM) %s, %s, %s, %s, %s}", SimpleUtil.getUnique(), namespace, needReply, resp.seq, body));
+            if (resp.code == 200 && needReply && resp.data != null) {
+                SimpleUtil.debug("Response(broadcast) " + logSuffix + " -> " + resp.data);
+                if (reply != null) {
+                    reply.accept(new Gson().fromJson(resp.data, TypeToken.getParameterized(Map.class, String.class, String.class).getType()));
+                }
+                return;
+            }
+            switch (resp.code) {
+                case -1: SimpleUtil.runtimeWarning("Broadcast [FAILURE]" + logSuffix); break;
+                case 400: SimpleUtil.runtimeWarning("Broadcast [WRONG ARG]" + logSuffix); break;
+                case 403: SimpleUtil.runtimeWarning("Broadcast [NOT PERMITTED]" + logSuffix); break;
+                default: SimpleUtil.runtimeWarning("Broadcast [ERROR UNEXPECTED]" + logSuffix); break;  // also match resp == null
             }
         });
     }

@@ -54,7 +54,7 @@ public class LBCAPIBukkitImpl implements LocalhostBridgeCoreAPI {
 
     @Override
     public void broadcast(String namespace, String body) {
-
+        // TODO
     }
 
     @Override

@@ -1,5 +1,6 @@
 package io.github.messycraft.localhostbridgecore.bungee.manager;
 
+import com.google.gson.Gson;
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
@@ -15,6 +16,9 @@ import lombok.Getter;
 import java.io.*;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -37,9 +41,7 @@ public final class HttpServerManager {
             logger.info("Start server on 127.0.0.1:" + port);
             server = HttpServer.create(new InetSocketAddress("127.0.0.1", port), 0);
             server.setExecutor(null);
-            server.createContext("/broadcast", httpExchange -> {
-
-            });
+            server.createContext("/broadcast", HttpServerManager::handleBroadcast);
             server.createContext("/send", HttpServerManager::handleDataReceive);
             server.createContext("/register", HttpServerManager::handleRegister);
             server.createContext("/list", HttpServerManager::handleGetList);
@@ -88,6 +90,64 @@ public final class HttpServerManager {
         os.write(data, 0, data.length);
         os.flush();
         exchange.close();
+    }
+
+    private static void handleBroadcast(HttpExchange httpExchange) throws IOException {
+        if (!httpExchange.getRequestMethod().equals("POST")) {
+            closeWithoutBody(405, httpExchange);
+            return;
+        }
+        Headers headers = httpExchange.getRequestHeaders();
+        if (!accessHeaders(headers)) {
+            closeWithoutBody(403, httpExchange);
+            return;
+        }
+        String from = getHeaderValue(headers, "unique");
+        String seq = getHeaderValue(headers, "seq");
+        String namespace = getHeaderValue(headers, "namespace");
+        boolean needReply = "reply".equals(headers.getFirst("extra"));
+        if (!SimpleUtil.nameMatches(namespace)) {
+            closeWithoutBody(400, httpExchange);
+            return;
+        }
+        String data = readFirstLine(httpExchange.getRequestBody());
+        if (data == null) {
+            closeWithoutBody(400, httpExchange);
+            return;
+        }
+        SimpleUtil.debug(String.format("Broadcast -> {(FROM) %s, %s, %s, %s, %s}", from, namespace, needReply, seq, data));
+        assert from != null;
+        Map<String, String> answer = new ConcurrentHashMap<>();
+        final int count = ChannelRegistrationUtil.getRegisteredChannel().size();  // contains "BC"
+        AtomicInteger completed = new AtomicInteger();
+        for (LChannel c : ChannelRegistrationUtil.getRegisteredChannel().values()) {
+            if (from.equals(c.getUnique())) continue;
+            SimpleUtil.runAsyncAsLBC(() -> ServerListPingUtil.sendCustomData(from, c, namespace, data, needReply, seq, r -> {
+                answer.put(c.getUnique(), r);
+                if (completed.incrementAndGet() == count) {
+                    try {
+                        String json = new Gson().toJson(answer);
+                        closeWithBody(200, json, httpExchange);
+                        SimpleUtil.debug("Reply(broadcast) [" + seq + "] -> " + json);
+                    } catch (IOException e) {
+                        SimpleUtil.runtimeWarning("Reply(broadcast) [FAILURE][" + seq + "]");
+                    }
+                }
+            }, () -> {
+                if (needReply && completed.incrementAndGet() == count) {
+                    try {
+                        String json = new Gson().toJson(answer);
+                        closeWithBody(200, json, httpExchange);
+                        SimpleUtil.debug("Reply(broadcast) [" + seq + "] -> " + json);
+                    } catch (IOException e) {
+                        SimpleUtil.runtimeWarning("Reply(broadcast) [FAILURE][" + seq + "]");
+                    }
+                }
+            }));
+        }
+        if (!needReply) {
+            closeWithoutBody(200, httpExchange);
+        }
     }
 
     private static void handleDataReceive(HttpExchange httpExchange) throws IOException {
