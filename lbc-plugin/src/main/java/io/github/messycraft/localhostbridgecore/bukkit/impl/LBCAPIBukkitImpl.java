@@ -22,6 +22,11 @@ public class LBCAPIBukkitImpl implements LocalhostBridgeCoreAPI {
     }
 
     @Override
+    public String getCurrentChannelName() {
+        return SimpleUtil.getUnique();
+    }
+
+    @Override
     public ListenerManager getListenerManager() {
         return listenerManager;
     }

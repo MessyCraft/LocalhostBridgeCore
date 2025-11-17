@@ -21,6 +21,12 @@ public interface LocalhostBridgeCoreAPI {
     List<String> getRegisteredChannels();
 
     /**
+     * 获取本端频道名称。或许对于广播时额外选择自己有所帮助。
+     * @return 本端频道名称
+     */
+    String getCurrentChannelName();
+
+    /**
      * 获取监听器管理器。在这里可以订阅指定命名空间的内容。
      * @return ListenerManager instance
      */
@@ -54,14 +60,14 @@ public interface LocalhostBridgeCoreAPI {
     void sendForReply(String channel, String namespace, String body, Consumer<String> reply, Runnable noReply);
 
     /**
-     * 向群组中广播一条消息。
+     * 向群组中广播一条消息(不包含自己所在服务端)。
      * @param namespace 命名空间
      * @param body 消息主体
      */
     void broadcast(String namespace, String body);
 
     /**
-     * 向群组中广播一条需要回复的消息。此方法在所有频道均已回复或超过{session-lifetime}毫秒后进行回调。
+     * 向群组中广播一条需要回复的消息(不包含自己所在服务端)。此方法在所有频道均已回复或超过{session-lifetime}毫秒后进行回调。
      * @param namespace 命名空间
      * @param body 消息主体
      * @param reply 回调，以Map形式传入所有频道的回复内容；Map的键为频道名，值为此频道回复的消息。

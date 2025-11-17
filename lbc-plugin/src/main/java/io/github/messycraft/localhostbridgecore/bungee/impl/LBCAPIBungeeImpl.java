@@ -2,15 +2,16 @@ package io.github.messycraft.localhostbridgecore.bungee.impl;
 
 import io.github.messycraft.localhostbridgecore.api.LocalhostBridgeCoreAPI;
 import io.github.messycraft.localhostbridgecore.api.subscribe.ListenerManager;
-import io.github.messycraft.localhostbridgecore.bungee.Properties;
 import io.github.messycraft.localhostbridgecore.bungee.entity.LChannel;
 import io.github.messycraft.localhostbridgecore.bungee.util.ChannelRegistrationUtil;
 import io.github.messycraft.localhostbridgecore.bungee.util.SimpleUtil;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -22,6 +23,11 @@ public class LBCAPIBungeeImpl implements LocalhostBridgeCoreAPI {
     @Override
     public List<String> getRegisteredChannels() {
         return Stream.concat(Stream.of("BC"), ChannelRegistrationUtil.getRegisteredChannel().keySet().stream()).collect(Collectors.toList());
+    }
+
+    @Override
+    public String getCurrentChannelName() {
+        return "BC";
     }
 
     @Override
@@ -77,8 +83,6 @@ public class LBCAPIBungeeImpl implements LocalhostBridgeCoreAPI {
         if (!SimpleUtil.nameMatches(namespace)) {
             throw new IllegalArgumentException("namespace contains illegal characters");
         }
-        String bcSeq = UUID.randomUUID().toString().substring(0, 6);
-        SimpleUtil.runAsyncAsLBC(() -> ((ListenerManagerBungeeImpl) listenerManager).callSelf(namespace, bcSeq, body, false, null));
         for (LChannel c : ChannelRegistrationUtil.getRegisteredChannel().values()) {
             SimpleUtil.runAsyncAsLBC(() -> c.sendChannelData(namespace, body, false, null, null));
         }
@@ -90,13 +94,20 @@ public class LBCAPIBungeeImpl implements LocalhostBridgeCoreAPI {
             throw new IllegalArgumentException("namespace contains illegal characters");
         }
         Map<String, String> answer = new ConcurrentHashMap<>();
-        String bcSeq = UUID.randomUUID().toString().substring(0, 6);
-        SimpleUtil.runAsyncAsLBC(() -> ((ListenerManagerBungeeImpl) listenerManager).callSelf(namespace, bcSeq, body, true, r -> answer.put("BC", r)));
+        final int count = ChannelRegistrationUtil.getRegisteredChannel().size();
+        AtomicInteger completed = new AtomicInteger();
         for (LChannel c : ChannelRegistrationUtil.getRegisteredChannel().values()) {
-            SimpleUtil.runAsyncAsLBC(() -> c.sendChannelData(namespace, body, true, r -> answer.put(c.getUnique(), r), null));
+            SimpleUtil.runAsyncAsLBC(() -> c.sendChannelData(namespace, body, true, r -> {
+                answer.put(c.getUnique(), r);
+                if (completed.incrementAndGet() == count) {
+                    reply.accept(new HashMap<>(answer));
+                }
+            }, () -> {
+                if (completed.incrementAndGet() == count) {
+                    reply.accept(new HashMap<>(answer));
+                }
+            }));
         }
-        // TODO: 当所有频道都完成回复时提早回调，避免多余等待
-        SimpleUtil.runAsyncDelayAsLBC(() -> reply.accept(answer), Properties.SESSION_LIFETIME);
     }
 
 }
