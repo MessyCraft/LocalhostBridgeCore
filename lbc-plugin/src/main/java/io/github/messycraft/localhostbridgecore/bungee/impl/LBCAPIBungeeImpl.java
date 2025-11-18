@@ -42,7 +42,7 @@ public class LBCAPIBungeeImpl implements LocalhostBridgeCoreAPI {
         }
         if ("BC".equals(channel)) {
             String seq = UUID.randomUUID().toString().substring(0, 6);
-            SimpleUtil.runAsyncAsLBC(() -> ((ListenerManagerBungeeImpl) listenerManager).callSelf(namespace, seq, body, false, null));
+            SimpleUtil.runAsyncAsLBC(() -> ((ListenerManagerBungeeImpl) listenerManager).call("BC", namespace, seq, body, false));
             return;
         }
         LChannel c = ChannelRegistrationUtil.getRegisteredChannel().get(channel);
@@ -66,7 +66,15 @@ public class LBCAPIBungeeImpl implements LocalhostBridgeCoreAPI {
         }
         if ("BC".equals(channel)) {
             String seq = UUID.randomUUID().toString().substring(0, 6);
-            SimpleUtil.runAsyncAsLBC(() -> ((ListenerManagerBungeeImpl) listenerManager).callSelf(namespace, seq, body, true, reply));
+            SimpleUtil.runAsyncAsLBC(() -> {
+                String ret = ((ListenerManagerBungeeImpl) listenerManager).call("BC", namespace, seq, body, true);
+                if (ret != null) {
+                    if (reply != null) reply.accept(ret);
+                }
+                else {
+                    if (noReply != null) noReply.run();
+                }
+            });
             return;
         }
         LChannel c = ChannelRegistrationUtil.getRegisteredChannel().get(channel);

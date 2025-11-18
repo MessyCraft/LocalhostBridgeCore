@@ -6,7 +6,6 @@ import io.github.messycraft.localhostbridgecore.api.subscribe.Replyable;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Consumer;
 
 public class ListenerManagerBungeeImpl implements ListenerManager {
 
@@ -22,16 +21,6 @@ public class ListenerManagerBungeeImpl implements ListenerManager {
             }
         }
         return ret[0];
-    }
-
-    public void callSelf(String namespace, String seq, String data, boolean needReply, Consumer<String> reply) {
-        PriorityQueue<ChannelListener> q = listeners.get(namespace);
-        Replyable replyable = new ReplyableBungeeImpl.Own(needReply ? reply : null, seq);
-        if (q != null) {
-            for (ChannelListener listener : q) {
-                listener.onMessageReceive("BC", namespace, seq, data, needReply, replyable);
-            }
-        }
     }
 
     @Override
