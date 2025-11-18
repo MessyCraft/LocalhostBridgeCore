@@ -54,12 +54,18 @@ public class LBCAPIBukkitImpl implements LocalhostBridgeCoreAPI {
 
     @Override
     public void broadcast(String namespace, String body) {
-        // TODO
+        if (!SimpleUtil.nameMatches(namespace)) {
+            throw new IllegalArgumentException("namespace contains illegal characters");
+        }
+        HttpClientUtil.sendBroadcastAsync(namespace, body, false, null);
     }
 
     @Override
     public void broadcastForWaitReply(String namespace, String body, Consumer<Map<String, String>> reply) {
-
+        if (!SimpleUtil.nameMatches(namespace)) {
+            throw new IllegalArgumentException("namespace contains illegal characters");
+        }
+        HttpClientUtil.sendBroadcastAsync(namespace, body, true, reply);
     }
 
 }
