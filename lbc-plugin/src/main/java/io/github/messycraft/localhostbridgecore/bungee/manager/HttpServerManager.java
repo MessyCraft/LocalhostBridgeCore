@@ -117,9 +117,31 @@ public final class HttpServerManager {
         }
         SimpleUtil.debug(String.format("Broadcast -> {(FROM) %s, %s, %s, %s, %s}", from, namespace, needReply, seq, data));
         assert from != null;
+
         Map<String, String> answer = new ConcurrentHashMap<>();
         final int count = ChannelRegistrationUtil.getRegisteredChannel().size();  // contains "BC"
         AtomicInteger completed = new AtomicInteger();
+
+        // send to "BC"
+        SimpleUtil.runAsyncAsLBC(() -> {
+            String r = ((ListenerManagerBungeeImpl) LocalhostBridgeCoreAPIProvider.getAPI().getListenerManager()).call(from, namespace, seq, data, needReply);
+            if (needReply) {
+                if (r != null) {
+                    answer.put("BC", r);
+                }
+                if (completed.incrementAndGet() == count) {
+                    try {
+                        String json = new Gson().toJson(answer);
+                        closeWithBody(200, json, httpExchange);
+                        SimpleUtil.debug("Reply(broadcast) [" + seq + "] -> " + json);
+                    } catch (IOException e) {
+                        SimpleUtil.runtimeWarning("Reply(broadcast) [FAILURE][" + seq + "]");
+                    }
+                }
+            }
+        });
+
+        // send to every channel
         for (LChannel c : ChannelRegistrationUtil.getRegisteredChannel().values()) {
             if (from.equals(c.getUnique())) continue;
             SimpleUtil.runAsyncAsLBC(() -> ServerListPingUtil.sendCustomData(from, c, namespace, data, needReply, seq, r -> {
@@ -145,6 +167,8 @@ public final class HttpServerManager {
                 }
             }));
         }
+
+        // immediately close if !needReply
         if (!needReply) {
             closeWithoutBody(200, httpExchange);
         }
