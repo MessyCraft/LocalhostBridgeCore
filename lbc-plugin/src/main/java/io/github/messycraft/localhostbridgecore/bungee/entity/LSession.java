@@ -3,6 +3,7 @@ package io.github.messycraft.localhostbridgecore.bungee.entity;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
+@Deprecated
 @Data
 @RequiredArgsConstructor
 public class LSession {
