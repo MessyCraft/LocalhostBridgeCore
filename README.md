@@ -12,10 +12,6 @@ Emm, I started planning to make a replacement tool as soon as I found out about 
 
 But it's enough! It can solve some problems and make wrappers to provide more convenience for developers.
 
-## Future
-* Support Velocity platform. We don't have enough reasons to reject a young project.
-* Support Folia-Paper. The work will update in next version soon.
-
 ## Quick Start
 > **Attention!** Before you start, you need to understand whether it fits your needs.
 >
@@ -62,3 +58,7 @@ All of api operating can be invoked at primary thread.
 
 #### Other
 We will keep updating docs. Thanks for reading.
+
+## Future
+* Support Velocity platform. We don't have enough reasons to reject a young project.
+* Support Folia-Paper. The work will update in next version soon.
