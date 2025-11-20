@@ -15,6 +15,7 @@ import net.md_5.bungee.api.plugin.TabExecutor;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class MainCommand extends Command implements TabExecutor {
@@ -143,7 +144,7 @@ public class MainCommand extends Command implements TabExecutor {
             return;
         }
         if (subcommand.equalsIgnoreCase("send")) {
-            if (args.length != 4) {
+            if (args.length < 4) {
                 sendWrongArguments(sender);
                 return;
             }
@@ -155,17 +156,83 @@ public class MainCommand extends Command implements TabExecutor {
                 SimpleUtil.sendTextMessage(sender, "&c发送失败: namespace 包含特殊字符");
                 return;
             }
-            LocalhostBridgeCoreAPIProvider.getAPI().send(args[1], args[2], args[3]);
+            StringBuilder data = new StringBuilder();
+            for (int i = 3; i < args.length; i++) {
+                if (i > 3) data.append(" ");
+                data.append(args[i]);
+            }
+            LocalhostBridgeCoreAPIProvider.getAPI().send(args[1], args[2], data.toString());
             SimpleUtil.sendTextMessage(sender, "&a已向 " + args[1] + " 发送一条消息");
             return;
         }
         if (subcommand.equalsIgnoreCase("send-r")) {
+            if (args.length < 4) {
+                sendWrongArguments(sender);
+                return;
+            }
+            if (!ChannelRegistrationUtil.isRegistered(args[1])) {
+                SimpleUtil.sendTextMessage(sender, "&c发送失败: 频道 " + args[1] + " 不存在");
+                return;
+            }
+            if (!SimpleUtil.nameMatches(args[2])) {
+                SimpleUtil.sendTextMessage(sender, "&c发送失败: namespace 包含特殊字符");
+                return;
+            }
+            StringBuilder data = new StringBuilder();
+            for (int i = 3; i < args.length; i++) {
+                if (i > 3) data.append(" ");
+                data.append(args[i]);
+            }
+            LocalhostBridgeCoreAPIProvider.getAPI().sendForReply(args[1], args[2], data.toString(),
+                    r -> SimpleUtil.sendTextMessage(sender, "&b" + args[1] + " 回复 &7-> &e" + r),
+                    () -> SimpleUtil.sendRichMessage(sender, "&c" + args[1] + ": 接收回复超时或发送失败 &7(点击测试)", "点击测试频道连接: " + args[1], "/lbc hello " + args[1])
+            );
+            SimpleUtil.sendTextMessage(sender, "&a已向 " + args[1] + " 发送一条消息 (等待回复中...)");
             return;
         }
         if (subcommand.equalsIgnoreCase("broadcast")) {
+            if (args.length < 3) {
+                sendWrongArguments(sender);
+                return;
+            }
+            if (!SimpleUtil.nameMatches(args[1])) {
+                SimpleUtil.sendTextMessage(sender, "&c发送失败: namespace 包含特殊字符");
+                return;
+            }
+            StringBuilder data = new StringBuilder();
+            for (int i = 2; i < args.length; i++) {
+                if (i > 2) data.append(" ");
+                data.append(args[i]);
+            }
+            LocalhostBridgeCoreAPIProvider.getAPI().broadcast(args[1], data.toString());
+            SimpleUtil.sendTextMessage(sender, "&a已在群组中广播一条消息");
             return;
         }
         if (subcommand.equalsIgnoreCase("broadcast-r")) {
+            if (args.length < 3) {
+                sendWrongArguments(sender);
+                return;
+            }
+            if (!SimpleUtil.nameMatches(args[1])) {
+                SimpleUtil.sendTextMessage(sender, "&c发送失败: namespace 包含特殊字符");
+                return;
+            }
+            StringBuilder data = new StringBuilder();
+            for (int i = 2; i < args.length; i++) {
+                if (i > 2) data.append(" ");
+                data.append(args[i]);
+            }
+            LocalhostBridgeCoreAPIProvider.getAPI().broadcastForWaitReply(args[1], data.toString(), r -> {
+                sendLine(sender);
+                for (Map.Entry<String, String> e : r.entrySet()) {
+                    SimpleUtil.sendTextMessage(sender, "&b" + e.getKey() + " 回复 &7-> &e" + r);
+                }
+                if (r.isEmpty()) {
+                    SimpleUtil.sendRichMessage(sender, "&c广播: 未收到任何回复 &7(点击测试)", "点击测试频道连接", "/lbc hello");
+                }
+                sendLine(sender);
+            });
+            SimpleUtil.sendTextMessage(sender, "&a已在群组中广播一条消息 (等待各服务端回复中...)");
             return;
         }
         SimpleUtil.sendTextMessage(sender, "&4Error: Unknown subcommand '" + subcommand + "'");
