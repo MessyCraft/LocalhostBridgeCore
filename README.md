@@ -8,9 +8,57 @@
 ## Project Description
 > ~~A helper for communicating between BungeeCord and Bukkit, intended for developers' own servers and requires pre-deployment. Compared to PluginMessage, it may be easier to use, and most importantly, it can work without any proxy players.~~
 
-Yeah, this was designed for my own use. I started planning to make a replacement tool as soon as I found out about the proxy player limit in PluginMessage, but I needed to transfer info between different servers to the bots on my social platforms anytime. That's why this tool is so rough — didn't want to bother with authentication, so I just stripped it down to only work on localhost.
+Emm, I started planning to make a replacement tool as soon as I found out about the proxy player limit in PluginMessage, but I needed to transfer info between different servers to the bots on my social platforms anytime. That's why this tool is so rough — didn't want to bother with authentication, so I just stripped it down to only work on localhost.
 
-Most likely, only our own servers will use it, but for convenience, I still uploaded the API part to CodeMC.
+But it's enough! It can solve some problems and make wrappers to provide more convenience for developers.
+
+## Future
+* Support Velocity platform. We don't have enough reasons to reject a young project.
+* Support Folia-Paper. The work will update in next version soon.
 
 ## Quick Start
-To be continued
+> **Attention!** Before you start, you need to understand whether it fits your needs.
+>
+> This is a plugin that needs to be pre-deployed and requires full server support. It will not work at all if you just shade it.
+
+### Adding API to your project
+
+#### Maven
+```xml
+<!-- To be continued (if CodeMC access this repo, we will update it) -->
+```
+
+#### Gradle
+Groovy DSL:
+```groovy
+//To be continued
+```
+Kotlin DSL:
+```kotlin
+//To be continued
+```
+
+### Obtaining an instance of the API
+The root API interface is `LocalhostBridgeCoreAPI`. You need to obtain an instance of this interface in order to do anything.
+
+Just invoke this:
+```java
+LocalhostBridgeCoreAPI api = LocalhostBridgeCoreAPIProvider.getAPI();
+```
+It can be used on BungeeCord or Bukkit platform with the
+
+### Useful information
+
+#### Send
+All relative methods are in the instance of `LocalhostBridgeCoreAPI`. You can choose whether needing reply or not.
+
+#### Monitor
+Use the `api.getListenerManager()` to get an instance of `ListenerManager`, which contains the basic event-method such as `subscribe(args)` and `unsubscribe(args)`. 
+
+The custom listener require to override abstract method of `ChannelListner`.
+
+#### Callback
+All of api operating can be invoked at primary thread.
+
+#### Other
+We will keep updating docs. Thanks for reading.
