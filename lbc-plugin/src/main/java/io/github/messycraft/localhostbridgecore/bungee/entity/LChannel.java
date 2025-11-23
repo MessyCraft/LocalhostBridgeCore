@@ -44,8 +44,8 @@ public class LChannel {
             throw new IllegalStateException("valid == false");
         }
         String seq = UUID.randomUUID().toString().substring(0, 6);
-        long begin = System.nanoTime();
         AtomicLong ret = new AtomicLong(-1);
+        long begin = System.nanoTime();
         ServerListPingUtil.sendCustomData("BC", this, "", "", true, seq, s -> ret.set(System.nanoTime() - begin), null);
         return ret.get();
     }
