@@ -9,7 +9,15 @@ public abstract class ChannelListener {
     public final byte priority;
 
     /**
-     * @param priority 优先级。优先级小的监听器优先被广播，优先级相同的监听器不保证广播顺序。
+     * 使用默认优先级初始化。优先级小的监听器优先被广播，优先级相同的监听器不保证广播顺序。
+     */
+    public ChannelListener() {
+        this.priority = 0;
+    }
+
+    /**
+     * 使用指定优先级初始化。优先级小的监听器优先被广播，优先级相同的监听器不保证广播顺序。
+     * @param priority 优先级
      */
     public ChannelListener(byte priority) {
         this.priority = priority;
