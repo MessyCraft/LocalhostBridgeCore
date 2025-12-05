@@ -8,13 +8,14 @@ import com.github.retrooper.packetevents.wrapper.status.server.WrapperStatusServ
 import io.github.messycraft.localhostbridgecore.api.LocalhostBridgeCoreAPIProvider;
 import io.github.messycraft.localhostbridgecore.bukkit.impl.ListenerManagerBukkitImpl;
 import io.github.messycraft.localhostbridgecore.bukkit.util.SimpleUtil;
+import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 
 import java.net.InetSocketAddress;
 
 public class MessageReceiveListener extends SimplePacketListenerAbstract {
 
-    private Plugin plugin;
+    private final Plugin plugin;
 
     public MessageReceiveListener(Plugin plugin) {
         this.plugin = plugin;
@@ -49,7 +50,7 @@ public class MessageReceiveListener extends SimplePacketListenerAbstract {
                 return;
             }
             SimpleUtil.debug(String.format("Receive -> {%s, %s, %s, %s, %s}", unique, namespace, needReply, seq, data));
-            ((ListenerManagerBukkitImpl) LocalhostBridgeCoreAPIProvider.getAPI().getListenerManager()).call(unique, namespace, seq, data, needReply, event.getUser());
+            Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> ((ListenerManagerBukkitImpl) LocalhostBridgeCoreAPIProvider.getAPI().getListenerManager()).call(unique, namespace, seq, data, needReply, event.getUser()));
         }
     }
 
