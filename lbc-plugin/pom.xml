@@ -6,7 +6,7 @@
     <parent>
         <groupId>io.github.messycraft</groupId>
         <artifactId>LocalhostBridgeCore</artifactId>
-        <version>${revision}</version>
+        <version>1.0.3-SNAPSHOT</version>
     </parent>
 
     <artifactId>lbc-plugin</artifactId>
@@ -49,6 +49,14 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <version>3.1.1</version>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
             </plugin>
         </plugins>
         <resources>
@@ -100,7 +108,7 @@
         <dependency>
             <groupId>io.github.messycraft</groupId>
             <artifactId>lbc-api</artifactId>
-            <version>${revision}</version>
+            <version>1.0.3-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
         <dependency>

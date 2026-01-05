@@ -6,7 +6,7 @@
 
     <groupId>io.github.messycraft</groupId>
     <artifactId>LocalhostBridgeCore</artifactId>
-    <version>${revision}</version>
+    <version>1.0.3-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>LocalhostBridgeCore</name>
@@ -16,11 +16,17 @@
     </modules>
 
     <properties>
-        <revision>1.0.3-SNAPSHOT</revision>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
         <java.version>1.8</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
+
+    <distributionManagement>
+        <repository>
+            <id>messycraft</id>
+            <url>https://repo.codemc.io/repository/messycraft/</url>
+        </repository>
+    </distributionManagement>
 
 </project>
