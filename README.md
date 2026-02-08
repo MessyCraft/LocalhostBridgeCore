@@ -21,17 +21,22 @@ But it's enough! It can solve some problems and make wrappers to provide more co
 
 #### Maven
 ```xml
-<!-- To be continued (if CodeMC access this repo, we will update it) -->
+<dependency>
+    <groupId>io.github.messycraft</groupId>
+    <artifactId>lbc-api</artifactId>
+    <version>1.0.3-SNAPSHOT</version>
+    <scope>provided</scope>
+</dependency>
 ```
 
 #### Gradle
 Groovy DSL:
 ```groovy
-//To be continued
+compileOnly 'io.github.messycraft:lbc-api:1.0.3-SNAPSHOT'
 ```
 Kotlin DSL:
 ```kotlin
-//To be continued
+compileOnly("io.github.messycraft:lbc-api:1.0.3-SNAPSHOT")
 ```
 
 ### Obtaining an instance of the API
