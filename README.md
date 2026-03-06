@@ -21,10 +21,16 @@ But it's enough! It can solve some problems and make wrappers to provide more co
 
 #### Maven
 ```xml
+<repository>
+    <id>messycraft-repo</id>
+    <url>https://repo.codemc.io/repository/messycraft/</url>
+</repository>
+```
+```xml
 <dependency>
     <groupId>io.github.messycraft</groupId>
     <artifactId>lbc-api</artifactId>
-    <version>1.0.3-SNAPSHOT</version>
+    <version>{NEWEST_VERSION}</version>
     <scope>provided</scope>
 </dependency>
 ```
@@ -32,11 +38,17 @@ But it's enough! It can solve some problems and make wrappers to provide more co
 #### Gradle
 Groovy DSL:
 ```groovy
-compileOnly 'io.github.messycraft:lbc-api:1.0.3-SNAPSHOT'
+maven { url = "https://repo.codemc.io/repository/messycraft/" }
+```
+```groovy
+compileOnly 'io.github.messycraft:lbc-api:{NEWEST_VERSION}'
 ```
 Kotlin DSL:
 ```kotlin
-compileOnly("io.github.messycraft:lbc-api:1.0.3-SNAPSHOT")
+maven { url = uri("https://repo.codemc.io/repository/maven-releases/") }
+```
+```kotlin
+compileOnly("io.github.messycraft:lbc-api:{NEWEST_VERSION}")
 ```
 
 ### Obtaining an instance of the API
