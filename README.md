@@ -38,14 +38,14 @@ But it's enough! It can solve some problems and make wrappers to provide more co
 #### Gradle
 Groovy DSL:
 ```groovy
-maven { url = "https://repo.codemc.io/repository/messycraft/" }
+maven { url = 'https://repo.codemc.io/repository/messycraft/' }
 ```
 ```groovy
 compileOnly 'io.github.messycraft:lbc-api:{NEWEST_VERSION}'
 ```
 Kotlin DSL:
 ```kotlin
-maven { url = uri("https://repo.codemc.io/repository/maven-releases/") }
+maven { url = uri("https://repo.codemc.io/repository/messycraft/") }
 ```
 ```kotlin
 compileOnly("io.github.messycraft:lbc-api:{NEWEST_VERSION}")
