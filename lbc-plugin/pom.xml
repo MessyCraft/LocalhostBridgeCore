@@ -6,7 +6,7 @@
     <parent>
         <groupId>io.github.messycraft</groupId>
         <artifactId>LocalhostBridgeCore</artifactId>
-        <version>1.0.3-SNAPSHOT</version>
+        <version>1.0.4-SNAPSHOT</version>
     </parent>
 
     <artifactId>lbc-plugin</artifactId>
@@ -60,6 +60,12 @@
 
     <dependencies>
         <dependency>
+            <groupId>io.github.messycraft</groupId>
+            <artifactId>lbc-api</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <version>1.18.38</version>
@@ -76,12 +82,6 @@
             <artifactId>bungeecord-api</artifactId>
             <version>1.21-R0.3</version>
             <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.github.messycraft</groupId>
-            <artifactId>lbc-api</artifactId>
-            <version>1.0.3-SNAPSHOT</version>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>com.github.retrooper</groupId>

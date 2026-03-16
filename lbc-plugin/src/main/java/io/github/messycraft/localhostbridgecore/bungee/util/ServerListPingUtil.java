@@ -23,8 +23,9 @@ public final class ServerListPingUtil {
     public static void sendCustomData(String sender, LChannel channel, String namespace, String data, boolean needReply, String seq, Consumer<String> reply, Runnable noReply) {
         String logSuffix = "[" + seq + "]";
         int port = channel.getPort();
-        if (sender.length() + namespace.length() + data.length() + 15 > 255) {
-            SimpleUtil.runtimeWarning(String.format("IGNORE TOO LONG -> {%s, %s, %s, %s, %s...}", sender, namespace, needReply, seq, data.substring(0, 20)));
+        int totalLength = sender.length() + namespace.length() + data.length() + 15;
+        if (totalLength > 32767) {
+            SimpleUtil.runtimeWarning(String.format("IGNORE TOO LONG (>32767) -> {%s, %s, %s, %s, %s...}", sender, namespace, needReply, seq, data.length() > 20 ? data.substring(0, 20) : data));
             if (noReply != null) {
                 noReply.run();
             }
