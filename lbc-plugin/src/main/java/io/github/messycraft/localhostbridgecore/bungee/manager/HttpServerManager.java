@@ -25,6 +25,8 @@ import java.util.logging.Logger;
 
 public final class HttpServerManager {
 
+    private static final Gson GSON = new Gson();
+
     private static Logger logger;
     private static HttpServer server = null;
 
@@ -131,7 +133,7 @@ public final class HttpServerManager {
                 }
                 if (completed.incrementAndGet() == count) {
                     try {
-                        String json = new Gson().toJson(answer);
+                        String json = GSON.toJson(answer);
                         closeWithBody(200, json, httpExchange);
                         SimpleUtil.debug("Reply(broadcast) [" + seq + "] -> " + json);
                     } catch (IOException e) {
@@ -148,7 +150,7 @@ public final class HttpServerManager {
                 answer.put(c.getUnique(), r);
                 if (completed.incrementAndGet() == count) {
                     try {
-                        String json = new Gson().toJson(answer);
+                        String json = GSON.toJson(answer);
                         closeWithBody(200, json, httpExchange);
                         SimpleUtil.debug("Reply(broadcast) [" + seq + "] -> " + json);
                     } catch (IOException e) {
@@ -158,7 +160,7 @@ public final class HttpServerManager {
             }, () -> {
                 if (needReply && completed.incrementAndGet() == count) {
                     try {
-                        String json = new Gson().toJson(answer);
+                        String json = GSON.toJson(answer);
                         closeWithBody(200, json, httpExchange);
                         SimpleUtil.debug("Reply(broadcast) [" + seq + "] -> " + json);
                     } catch (IOException e) {

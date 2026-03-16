@@ -14,6 +14,8 @@ import java.util.function.Consumer;
 
 public final class ServerListPingUtil {
 
+    private static final Gson GSON = new Gson();
+
     private ServerListPingUtil() {}
 
     /**
@@ -71,7 +73,7 @@ public final class ServerListPingUtil {
                             SimpleUtil.runtimeWarning("Send [ERROR]" + logSuffix);
                             return;
                         }
-                        resp = new Gson().fromJson(readString(packetIn), JsonObject.class).get("d").getAsString();
+                        resp = GSON.fromJson(readString(packetIn), JsonObject.class).get("d").getAsString();
                         if (sender.equals("BC")) {
                             SimpleUtil.debug("Response " + logSuffix + " -> " + resp);
                         }

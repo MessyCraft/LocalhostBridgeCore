@@ -21,6 +21,8 @@ import java.util.logging.Level;
 
 public final class HttpClientUtil {
 
+    private static final Gson GSON = new Gson();
+
     private static int CONNECT_TIMEOUT = 50;
     private static int READ_TIMEOUT = 10000;
 
@@ -156,7 +158,7 @@ public final class HttpClientUtil {
                 if (resp.code == 200 && resp.data != null) {
                     SimpleUtil.debug("Response(broadcast) " + logSuffix + " -> " + resp.data);
                     if (reply != null) {
-                        reply.accept(new Gson().fromJson(resp.data, TypeToken.getParameterized(Map.class, String.class, String.class).getType()));
+                        reply.accept(GSON.fromJson(resp.data, TypeToken.getParameterized(Map.class, String.class, String.class).getType()));
                     }
                     return;
                 }
@@ -190,7 +192,7 @@ public final class HttpClientUtil {
         ResponseStruct resp = doPost("/hello", null, null, target);
         Map<String, Integer> ret = new HashMap<>();
         if (resp.code == 200) {
-            ret.putAll(new Gson().fromJson(resp.data, TypeToken.getParameterized(Map.class, String.class, Integer.class).getType()));
+            ret.putAll(GSON.fromJson(resp.data, TypeToken.getParameterized(Map.class, String.class, Integer.class).getType()));
         }
         else {
             ret.put(String.valueOf(target), -1);
