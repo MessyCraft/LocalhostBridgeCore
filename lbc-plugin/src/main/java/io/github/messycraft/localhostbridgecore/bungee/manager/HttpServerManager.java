@@ -112,11 +112,8 @@ public final class HttpServerManager {
             closeWithoutBody(400, httpExchange);
             return;
         }
-        String data = readFirstLine(httpExchange.getRequestBody());
-        if (data == null) {
-            closeWithoutBody(400, httpExchange);
-            return;
-        }
+        String line = readFirstLine(httpExchange.getRequestBody());
+        final String data = (line == null) ? "" : line;
         SimpleUtil.debug(String.format("Broadcast -> {(FROM) %s, %s, %s, %s, %s}", from, namespace, needReply, seq, data));
         assert from != null;
 
@@ -195,11 +192,8 @@ public final class HttpServerManager {
             closeWithoutBody(400, httpExchange);
             return;
         }
-        String data = readFirstLine(httpExchange.getRequestBody());
-        if (data == null) {
-            closeWithoutBody(400, httpExchange);
-            return;
-        }
+        String line = readFirstLine(httpExchange.getRequestBody());
+        final String data = (line == null) ? "" : line;
         if (target.equals("BC")) {
             SimpleUtil.debug(String.format("Receive -> {%s, %s, %s, %s, %s}", from, namespace, needReply, seq, data));
             String ret = ((ListenerManagerBungeeImpl) LocalhostBridgeCoreAPIProvider.getAPI().getListenerManager()).call(from, namespace, seq, data, needReply);
