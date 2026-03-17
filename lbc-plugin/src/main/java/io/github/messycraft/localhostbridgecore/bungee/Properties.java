@@ -13,6 +13,9 @@ public class Properties {
     public static boolean DEBUG;
     public static boolean SHOW_WARNINGS = true;
 
+    public static boolean PLUGIN_UPDATER_ENABLE;
+    public static String PLUGIN_UPDATER_SHARED_PATH = "";
+    public static boolean PLUGIN_UPDATER_BACKUP_ON_REPLACE = true;
 
     public static void fromFile() {
         BIND_PORT = YamlConfigurationUtil.getConfig().getInt("bind-port", -1);
@@ -21,6 +24,10 @@ public class Properties {
         SESSION_LIFETIME = YamlConfigurationUtil.getConfig().getInt("session-lifetime", -1);
         DEBUG = YamlConfigurationUtil.getConfig().getBoolean("debug", false);
         SHOW_WARNINGS = YamlConfigurationUtil.getConfig().getBoolean("show-warnings", true);
+
+        PLUGIN_UPDATER_ENABLE = YamlConfigurationUtil.getConfig().getBoolean("plugin-updater.enable", false);
+        PLUGIN_UPDATER_SHARED_PATH = YamlConfigurationUtil.getConfig().getString("plugin-updater.shared-path", "");
+        PLUGIN_UPDATER_BACKUP_ON_REPLACE = YamlConfigurationUtil.getConfig().getBoolean("plugin-updater.backup-on-replace", true);
     }
 
 }

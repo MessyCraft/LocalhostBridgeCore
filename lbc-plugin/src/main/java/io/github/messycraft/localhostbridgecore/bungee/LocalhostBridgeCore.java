@@ -4,6 +4,7 @@ import io.github.messycraft.localhostbridgecore.api.LocalhostBridgeCoreAPIProvid
 import io.github.messycraft.localhostbridgecore.bungee.command.MainCommand;
 import io.github.messycraft.localhostbridgecore.bungee.impl.LBCAPIBungeeImpl;
 import io.github.messycraft.localhostbridgecore.bungee.manager.HttpServerManager;
+import io.github.messycraft.localhostbridgecore.bungee.manager.UpdaterManager;
 import io.github.messycraft.localhostbridgecore.bungee.util.ChannelRegistrationUtil;
 import io.github.messycraft.localhostbridgecore.bungee.util.SimpleUtil;
 import io.github.messycraft.localhostbridgecore.bungee.util.YamlConfigurationUtil;
@@ -14,6 +15,9 @@ public final class LocalhostBridgeCore extends Plugin {
 
     @Getter
     private static LocalhostBridgeCore instance;
+
+    @Getter
+    private UpdaterManager updaterManager;
 
     @Override
     public void onEnable() {
@@ -30,6 +34,9 @@ public final class LocalhostBridgeCore extends Plugin {
 
         SimpleUtil.runAsyncAsLBC(() -> HttpServerManager.start(getLogger()));
         LocalhostBridgeCoreAPIProvider.setAPI(new LBCAPIBungeeImpl());
+
+        updaterManager = new UpdaterManager();
+        updaterManager.init();
     }
 
     @Override

@@ -5,17 +5,22 @@ import io.github.messycraft.localhostbridgecore.api.LocalhostBridgeCoreAPIProvid
 import io.github.messycraft.localhostbridgecore.bukkit.command.InfoCommand;
 import io.github.messycraft.localhostbridgecore.bukkit.command.ReloadCommand;
 import io.github.messycraft.localhostbridgecore.bukkit.impl.LBCAPIBukkitImpl;
+import io.github.messycraft.localhostbridgecore.bukkit.manager.UpdaterClientManager;
 import io.github.messycraft.localhostbridgecore.bukkit.packetlistener.MessageReceiveListener;
 import io.github.messycraft.localhostbridgecore.bukkit.util.HttpClientUtil;
 import io.github.messycraft.localhostbridgecore.bukkit.util.SimpleUtil;
 import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder;
 import lombok.Getter;
+import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class LocalhostBridgeCore extends JavaPlugin {
 
     @Getter
     private static LocalhostBridgeCore instance;
+
+    @Getter
+    private UpdaterClientManager updaterClientManager;
 
     @Override
     @SuppressWarnings("all")
@@ -41,6 +46,9 @@ public final class LocalhostBridgeCore extends JavaPlugin {
         getLogger().info("Type 'lbc-info' on console to get more!");
 
         LocalhostBridgeCoreAPIProvider.setAPI(new LBCAPIBukkitImpl());
+
+        updaterClientManager = new UpdaterClientManager();
+        Bukkit.getScheduler().runTaskLater(this, updaterClientManager::init, 10L);
     }
 
     @Override

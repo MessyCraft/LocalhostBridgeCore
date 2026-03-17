@@ -55,4 +55,8 @@ public final class SimpleUtil {
         return LocalhostBridgeCore.getInstance().getConfig().getInt("read-timeout", 10000);
     }
 
+    public static boolean isPluginUpdaterEnable() {
+        return !LocalhostBridgeCore.getInstance().getConfig().getBoolean("plugin-updater-client.disable", false);
+    }
+
 }

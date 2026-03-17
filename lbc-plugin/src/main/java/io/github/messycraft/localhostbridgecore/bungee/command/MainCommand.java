@@ -1,5 +1,6 @@
 package io.github.messycraft.localhostbridgecore.bungee.command;
 
+import com.google.gson.Gson;
 import io.github.messycraft.localhostbridgecore.api.LocalhostBridgeCoreAPIProvider;
 import io.github.messycraft.localhostbridgecore.bungee.LocalhostBridgeCore;
 import io.github.messycraft.localhostbridgecore.bungee.Properties;
@@ -8,6 +9,8 @@ import io.github.messycraft.localhostbridgecore.bungee.util.ChannelRegistrationU
 import io.github.messycraft.localhostbridgecore.bungee.manager.HttpServerManager;
 import io.github.messycraft.localhostbridgecore.bungee.util.SimpleUtil;
 import io.github.messycraft.localhostbridgecore.bungee.util.YamlConfigurationUtil;
+import io.github.messycraft.localhostbridgecore.common.dto.UpdaterCallbackDTO;
+import io.github.messycraft.localhostbridgecore.common.dto.UpdaterResultDTO;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.plugin.Command;
 import net.md_5.bungee.api.plugin.PluginDescription;
@@ -19,6 +22,8 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class MainCommand extends Command implements TabExecutor {
+
+    private static final Gson GSON = new Gson();
 
     public MainCommand() {
         super("lbc", "localhostbridgecore.admin", "localhostbridgecore");
@@ -99,6 +104,7 @@ public class MainCommand extends Command implements TabExecutor {
                 ChannelRegistrationUtil.loadData();
                 HttpServerManager.shutdown();
                 HttpServerManager.start(LocalhostBridgeCore.getInstance().getLogger());
+                LocalhostBridgeCore.getInstance().getUpdaterManager().init();
                 SimpleUtil.sendTextMessage(sender, "&2重启命令已执行完成");
             });
             return;
@@ -235,17 +241,150 @@ public class MainCommand extends Command implements TabExecutor {
             SimpleUtil.sendTextMessage(sender, "&a已在群组中广播一条消息 (等待各服务端回复中...)");
             return;
         }
+        if (subcommand.equalsIgnoreCase("updater")) {
+            handleUpdaterCommand(sender, args);
+            return;
+        }
         SimpleUtil.sendTextMessage(sender, "&4Error: Unknown subcommand '" + subcommand + "'");
+    }
+
+    private void handleUpdaterCommand(CommandSender sender, String[] args) {
+        if (!LocalhostBridgeCore.getInstance().getUpdaterManager().isRunning()) {
+            SimpleUtil.sendTextMessage(sender, "&4Error: 更新器未运行。你可以在确保功能启用的情况下，使用 lbc restart 重启服务。");
+            return;
+        }
+
+        if (args.length < 2) {
+            sendLine(sender);
+            SimpleUtil.sendTextMessage(sender, "&b/lbc updater push  &3立即推送插件配置文件更新并执行热重载");
+            SimpleUtil.sendTextMessage(sender, "&b/lbc updater push <server>  &3立即推送指定服务器插件配置文件更新并执行热重载");
+            SimpleUtil.sendTextMessage(sender, "&b/lbc updater reboot  &3重启所有需要更新的子服以应用更新");
+            SimpleUtil.sendTextMessage(sender, "&b/lbc updater reboot <server>  &3重启指定需要更新的子服以应用更新");
+            sendLine(sender);
+            return;
+        }
+
+        String updaterSubcommand = args[1];
+
+        if (updaterSubcommand.equalsIgnoreCase("push")) {
+            if (args.length == 2) {
+                handleUpdaterPushAll(sender);
+            } else if (args.length == 3) {
+                handleUpdaterPushServer(sender, args[2]);
+            } else {
+                sendWrongArguments(sender);
+            }
+            return;
+        }
+
+        if (updaterSubcommand.equalsIgnoreCase("reboot")) {
+            if (args.length == 2) {
+                handleUpdaterRebootAll(sender);
+            } else if (args.length == 3) {
+                handleUpdaterRebootServer(sender, args[2]);
+            } else {
+                sendWrongArguments(sender);
+            }
+            return;
+        }
+
+        SimpleUtil.sendTextMessage(sender, "&4Error: Unknown updater subcommand '" + updaterSubcommand + "'");
+    }
+
+    private void handleUpdaterPushAll(CommandSender sender) {
+        SimpleUtil.sendTextMessage(sender, "&e[Updater] 正在推送所有服务器的配置文件更新...");
+        SimpleUtil.runAsyncAsLBC(() -> {
+            for (String server : ChannelRegistrationUtil.getRegisteredChannel().keySet()) {
+                UpdaterResultDTO updaterResultDTO = LocalhostBridgeCore.getInstance().getUpdaterManager().generateUpdaterResult(server);
+                LocalhostBridgeCoreAPIProvider.getAPI().sendForReply(server, "lbc:PushPluginUpdater", GSON.toJson(updaterResultDTO), r -> {
+                    try {
+                        UpdaterCallbackDTO updaterCallbackDTO = GSON.fromJson(r, UpdaterCallbackDTO.class);
+                        sendPushUpdateReport(sender, server, updaterCallbackDTO);
+                    } catch (Exception e) {
+                        SimpleUtil.sendTextMessage(sender, "&c[Updater] 服务器 &e" + server + "&c: 解析回复数据失败");
+                        LocalhostBridgeCore.getInstance().getLogger().log(java.util.logging.Level.WARNING, "Failed to parse callback from " + server, e);
+                    }
+                }, () -> SimpleUtil.sendTextMessage(sender, "&c[Updater] 服务器 &e" + server + "&c: 推送失败或超时"));
+            }
+        });
+    }
+
+    private void handleUpdaterPushServer(CommandSender sender, String serverName) {
+        if (!ChannelRegistrationUtil.isRegistered(serverName)) {
+            SimpleUtil.sendTextMessage(sender, "&c[Updater] 服务器 &e" + serverName + "&c 不存在或未注册");
+            return;
+        }
+
+        SimpleUtil.sendTextMessage(sender, "&e[Updater] 正在推送服务器 " + serverName + " 的配置文件更新...");
+        SimpleUtil.runAsyncAsLBC(() -> {
+            UpdaterResultDTO updaterResultDTO = LocalhostBridgeCore.getInstance().getUpdaterManager().generateUpdaterResult(serverName);
+            LocalhostBridgeCoreAPIProvider.getAPI().sendForReply(serverName, "lbc:PushPluginUpdater", GSON.toJson(updaterResultDTO), r -> {
+                try {
+                    UpdaterCallbackDTO updaterCallbackDTO = GSON.fromJson(r, UpdaterCallbackDTO.class);
+                    sendPushUpdateReport(sender, serverName, updaterCallbackDTO);
+                } catch (Exception e) {
+                    SimpleUtil.sendTextMessage(sender, "&c[Updater] 服务器 &e" + serverName + "&c: 解析回复数据失败");
+                    LocalhostBridgeCore.getInstance().getLogger().log(java.util.logging.Level.WARNING, "Failed to parse callback from " + serverName, e);
+                }
+            }, () -> SimpleUtil.sendTextMessage(sender, "&c[Updater] 服务器 &e" + serverName + "&c: 推送失败或超时"));
+        });
+    }
+
+    private void handleUpdaterRebootAll(CommandSender sender) {
+        SimpleUtil.sendTextMessage(sender, "&e[Updater] 正在准备重启所有需要更新的子服...");
+        SimpleUtil.runAsyncAsLBC(() -> {
+            for (String server : ChannelRegistrationUtil.getRegisteredChannel().keySet()) {
+                UpdaterResultDTO updaterResultDTO = LocalhostBridgeCore.getInstance().getUpdaterManager().generateUpdaterResult(server);
+                LocalhostBridgeCoreAPIProvider.getAPI().sendForReply(server, "lbc:RebootPluginUpdater", GSON.toJson(updaterResultDTO), r -> {
+                    try {
+                        UpdaterCallbackDTO updaterCallbackDTO = GSON.fromJson(r, UpdaterCallbackDTO.class);
+                        sendRebootUpdateReport(sender, server, updaterCallbackDTO);
+                    } catch (Exception e) {
+                        SimpleUtil.sendTextMessage(sender, "&c[Updater] 服务器 &e" + server + "&c: 解析回复数据失败");
+                        LocalhostBridgeCore.getInstance().getLogger().log(java.util.logging.Level.WARNING, "Failed to parse callback from " + server, e);
+                    }
+                }, () -> SimpleUtil.sendTextMessage(sender, "&c[Updater] 服务器 &e" + server + "&c: 推送失败或超时"));
+            }
+        });
+    }
+
+    private void handleUpdaterRebootServer(CommandSender sender, String serverName) {
+        if (!ChannelRegistrationUtil.isRegistered(serverName)) {
+            SimpleUtil.sendTextMessage(sender, "&c[Updater] 服务器 &e" + serverName + "&c 不存在或未注册");
+            return;
+        }
+
+        SimpleUtil.sendTextMessage(sender, "&e[Updater] 正在准备重启子服: " + serverName);
+        SimpleUtil.runAsyncAsLBC(() -> {
+            UpdaterResultDTO updaterResultDTO = LocalhostBridgeCore.getInstance().getUpdaterManager().generateUpdaterResult(serverName);
+            LocalhostBridgeCoreAPIProvider.getAPI().sendForReply(serverName, "lbc:RebootPluginUpdater", GSON.toJson(updaterResultDTO), r -> {
+                try {
+                    UpdaterCallbackDTO updaterCallbackDTO = GSON.fromJson(r, UpdaterCallbackDTO.class);
+                    sendRebootUpdateReport(sender, serverName, updaterCallbackDTO);
+                } catch (Exception e) {
+                    SimpleUtil.sendTextMessage(sender, "&c[Updater] 服务器 &e" + serverName + "&c: 解析回复数据失败");
+                    LocalhostBridgeCore.getInstance().getLogger().log(java.util.logging.Level.WARNING, "Failed to parse callback from " + serverName, e);
+                }
+            }, () -> SimpleUtil.sendTextMessage(sender, "&c[Updater] 服务器 &e" + serverName + "&c: 推送失败或超时"));
+        });
     }
 
     @Override
     public Iterable<String> onTabComplete(CommandSender sender, String[] args) {
         if (args.length == 1) {
-            return SimpleUtil.tabPrefixFilter(Arrays.asList("status", "restart", "hello", "help", "register", "unregister", "send", "send-r", "broadcast", "broadcast-r"), args[0]);
+            return SimpleUtil.tabPrefixFilter(Arrays.asList("status", "restart", "hello", "help", "register", "unregister", "send", "send-r", "broadcast", "broadcast-r", "updater"), args[0]);
         }
         else if (args.length == 2) {
             if (Arrays.asList("hello", "register", "unregister", "send", "send-r").contains(args[0])) {
                 return SimpleUtil.tabPrefixFilter(ChannelRegistrationUtil.getRegisteredChannel().keySet(), args[1]);
+            }
+            if (args[0].equalsIgnoreCase("updater")) {
+                return SimpleUtil.tabPrefixFilter(Arrays.asList("push", "reboot"), args[1]);
+            }
+        }
+        else if (args.length == 3) {
+            if (args[0].equalsIgnoreCase("updater") && (args[1].equalsIgnoreCase("push") || args[1].equalsIgnoreCase("reboot"))) {
+                return SimpleUtil.tabPrefixFilter(ChannelRegistrationUtil.getRegisteredChannel().keySet(), args[2]);
             }
         }
         return Collections.emptyList();
@@ -268,6 +407,8 @@ public class MainCommand extends Command implements TabExecutor {
         SimpleUtil.sendTextMessage(sender, "&b/lbc broadcast <namespace> <body>  &3广播一条消息");
         SimpleUtil.sendTextMessage(sender, "&b/lbc broadcast-r <namespace> <body>  &3广播一条消息(需要回复)");
         SimpleUtil.sendTextMessage(sender, "");
+        SimpleUtil.sendTextMessage(sender, "&b/lbc updater  &3查看更新器子命令");
+        SimpleUtil.sendTextMessage(sender, "");
         SimpleUtil.sendTextMessage(sender, "&3注: &o<port>&3 代表目标Minecraft服务器端口号");
         sendLine(sender);
     }
@@ -283,6 +424,79 @@ public class MainCommand extends Command implements TabExecutor {
 
     private void sendWrongArguments(CommandSender sender) {
         SimpleUtil.sendTextMessage(sender, "&4Error: Wrong arguments");
+    }
+
+    private void sendPushUpdateReport(CommandSender sender, String serverName, UpdaterCallbackDTO updaterCallbackDTO) {
+        if (updaterCallbackDTO != null && updaterCallbackDTO.isHasUpdate()) {
+            StringBuilder message = new StringBuilder();
+            message.append("&8&m                              &r\n");
+            message.append("&a[Updater] 服务器 &e").append(serverName).append("&a 配置更新完成:\n");
+            
+            if (updaterCallbackDTO.getUpdatedConfigFiles() != null && !updaterCallbackDTO.getUpdatedConfigFiles().isEmpty()) {
+                message.append("&7  配置文件更新: &b").append(updaterCallbackDTO.getUpdatedConfigFiles().size()).append(" 个\n");
+                for (String file : updaterCallbackDTO.getUpdatedConfigFiles()) {
+                    message.append("&7    - &f").append(file).append("\n");
+                }
+            }
+            
+            if (updaterCallbackDTO.getUpdatedPluginFiles() != null && !updaterCallbackDTO.getUpdatedPluginFiles().isEmpty()) {
+                message.append("&e  检测到JAR更新(未应用): &b").append(updaterCallbackDTO.getUpdatedPluginFiles().size()).append(" 个\n");
+                for (String file : updaterCallbackDTO.getUpdatedPluginFiles()) {
+                    message.append("&e    - &f").append(file).append("\n");
+                }
+                message.append("&e  提示: 使用 &b/lbc updater reboot ").append(serverName).append("&e 以应用JAR更新\n");
+            }
+
+            if (updaterCallbackDTO.getUpdatedConfigFiles() != null && !updaterCallbackDTO.getUpdatedConfigFiles().isEmpty()) {
+                message.append("&2  状态: 配置已热重载\n");
+            } else {
+                message.append("&2  状态: 未改动\n");
+            }
+            message.append("&8&m                              &r");
+            
+            SimpleUtil.sendTextMessage(sender, message.toString());
+        } else if (updaterCallbackDTO != null) {
+            SimpleUtil.sendTextMessage(sender, "&7[Updater] 服务器 &e" + serverName + "&7: 无需更新");
+        }
+    }
+
+    private void sendRebootUpdateReport(CommandSender sender, String serverName, UpdaterCallbackDTO updaterCallbackDTO) {
+        if (updaterCallbackDTO != null && updaterCallbackDTO.isHasUpdate()) {
+            StringBuilder message = new StringBuilder();
+            message.append("&8&m                              &r\n");
+            message.append("&a[Updater] 服务器 &e").append(serverName).append("&a 更新完成:\n");
+
+            if (updaterCallbackDTO.getUpdatedConfigFiles() != null && !updaterCallbackDTO.getUpdatedConfigFiles().isEmpty()) {
+                message.append("&7  配置文件更新: &b").append(updaterCallbackDTO.getUpdatedConfigFiles().size()).append(" 个\n");
+                for (String file : updaterCallbackDTO.getUpdatedConfigFiles()) {
+                    message.append("&7    - &f").append(file).append("\n");
+                }
+            }
+
+            if (updaterCallbackDTO.getUpdatedPluginFiles() != null && !updaterCallbackDTO.getUpdatedPluginFiles().isEmpty()) {
+                message.append("&7  插件文件更新: &b").append(updaterCallbackDTO.getUpdatedPluginFiles().size()).append(" 个\n");
+                for (String file : updaterCallbackDTO.getUpdatedPluginFiles()) {
+                    message.append("&7    - &f").append(file).append("\n");
+                }
+            }
+
+            if (updaterCallbackDTO.isHasReboot()) {
+                message.append("&2  状态: 正在重启以应用更新\n");
+            } else if (updaterCallbackDTO.getUpdatedPluginFiles() != null && !updaterCallbackDTO.getUpdatedPluginFiles().isEmpty()) {
+                if (updaterCallbackDTO.getUpdatedConfigFiles() != null && !updaterCallbackDTO.getUpdatedConfigFiles().isEmpty()) {
+                    message.append("&2  状态: Jar更新失败(服务器内有玩家); 配置已热重载\n");
+                } else {
+                    message.append("&2  状态: Jar更新失败(服务器内有玩家)\n");
+                }
+            } else {
+                message.append("&2  状态: 配置已热重载\n");
+            }
+            message.append("&8&m                              &r");
+
+            SimpleUtil.sendTextMessage(sender, message.toString());
+        } else if (updaterCallbackDTO != null) {
+            SimpleUtil.sendTextMessage(sender, "&7[Updater] 服务器 &e" + serverName + "&7: 无需更新");
+        }
     }
 
 }

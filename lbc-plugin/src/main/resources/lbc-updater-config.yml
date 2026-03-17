@@ -1,0 +1,66 @@
+#########################
+## LBC 更新管理器配置文件 ##
+#########################
+
+#########################
+# 【功能简述】
+# 此文件夹为LBC更新器的共享文件夹，
+# 用于统一管理插件jar的更新及其插件文件夹更新。
+# 【重要信息】
+# - 内容存放目录位于 ./repo
+# - LBC只会对已有插件进行更新替换，若子服没有对应插件则不会同步相关内容
+# - 使用指令 "lbc updater push" 可以立即推送所有配置文件的更改，并执行相关热重载配置文件指令
+# - 暂不支持热重载更新插件jar，以规避可能的bugs，但你可以使用 "lbc updater reboot" 来立即重启部分服或所有服执行更新
+# - 插件文件夹内容的更新将保持内容存放目录中的原有文件结构
+# - YAML/JSON文件的更新中，可以使用占位符 $$LBC_SERVER_NAME$$ 以在更新中自动替换为预配置的子服名
+# - 更新一旦执行不可撤销，所以请开启替换时备份选项，并且自行备份重要内容
+#########################
+
+# 进行更新的插件列表，包括jar和其插件文件夹
+access-plugins:
+  - ViaVersion
+  - LuckPerms
+  - LocalhostBridgeCore
+
+# 特定子服禁用更新的插件
+#
+# 预配置的子服名1:
+#   - BlacklistPlugin1
+#   - BlacklistPlugin2
+server-ignore-plugins: {}
+
+# 可选，热重载配置文件指令，不同插件单独配置
+#
+# 插件名XXX:
+#   - cmd1
+#   - cmd2
+reload-config-command:
+  ViaVersion:
+    - 'viaver reload'
+  LuckPerms:
+    - 'lp reloadconfig'
+  LocalhostBridgeCore:
+    - 'lbc-reload'
+
+# 锚点定义，仅为YAML语法糖，插件不会读取此处内容
+server-placeholder-mapping-define:
+  # 例，多大厅时只使用唯一服务器名
+  LobbyGroup: &LobbyGroup
+    lobby-1: lobby
+    lobby-2: lobby
+  # 例，多小游戏服时只使用唯一服务器名
+  BedwarsGroup: &BedwarsGroup
+    bedwars-1: bw
+    bedwars-2: bw
+  # 定义组合锚点
+  LuckPermsGroup: &LuckPermsGroup
+    <<: *LobbyGroup
+    <<: *BedwarsGroup
+
+# 可选，对特定插件单独设置 $$LBC_SERVER_NAME$$ 占位符的内容，未特别设置的将采用默认
+#
+# 插件名XXX:
+#   子服名1: 映射名1
+#   子服名2: 映射名2
+server-placeholder-mapping:
+  LuckPerms: *LuckPermsGroup
