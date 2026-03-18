@@ -29,7 +29,7 @@ import java.util.logging.Level;
 public class UpdaterClientManager {
 
     private static final Method GET_PLUGIN_FILE_METHOD;
-    private static final long MAX_CONFIG_FILE_SIZE = 32 * 1024; // 32KB
+    private static final long MAX_CONFIG_FILE_SIZE = 1024 * 1024; // 1MB
 
     private Path backupPath;
 
