@@ -76,6 +76,33 @@ All of api operating can be invoked at primary thread.
 #### Other
 We will keep updating docs. Thanks for reading.
 
+## Features
+
+### Plugin Updater
+Centralized plugin management system for multi-server networks. Deploy configuration and JAR updates from BungeeCord to all Bukkit servers.
+
+**Key Features:**
+- **Hot Configuration Updates**: Push config changes without server restart (`/lbc updater push`)
+- **JAR Management**: Deploy plugin updates with automatic restart (`/lbc updater reboot`)
+- **Smart Sync**: SHA-256 comparison prevents unnecessary updates
+- **Placeholder Support**: Auto-replace `$$LBC_SERVER_NAME$$` in configs per server
+- **Backup System**: Automatic backups to `shared-path/backup/{server}/`
+- **Selective Updates**: Per-server ignore lists and custom reload commands
+
+**Setup:**
+1. Configure `plugin-updater.shared-path` in BungeeCord's `config-bungee.yml`
+2. Place plugins in `{shared-path}/repo/{PluginName}/` (folders for configs, JARs in root)
+3. Edit `{shared-path}/lbc-updater-config.yml` to define access plugins and reload commands
+4. Use `/lbc updater push [server]` or `/lbc updater reboot [server]` from BungeeCord console
+
+## Changelog
+
+### v1.1.0-SNAPSHOT (2026-03-18)
+- **Added**: Plugin Updater (major update)
+- **Added**: Centralized management and backup system
+- **Fixed**: empty data sending error
+- **Improved**: Modified namespace special character restrictions
+
 ## Future
 * Support Velocity platform. We don't have enough reasons to reject a young project.
 * Support Folia-Paper. The work will update in next version soon.
