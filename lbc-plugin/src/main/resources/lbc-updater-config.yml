@@ -20,7 +20,6 @@
 access-plugins:
   - ViaVersion
   - LuckPerms
-  - LocalhostBridgeCore
 
 # 特定子服禁用更新的插件
 #
@@ -39,8 +38,6 @@ reload-config-command:
     - 'viaver reload'
   LuckPerms:
     - 'lp reloadconfig'
-  LocalhostBridgeCore:
-    - 'lbc-reload'
 
 # 锚点定义，仅为YAML语法糖，插件不会读取此处内容
 server-placeholder-mapping-define:
