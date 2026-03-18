@@ -31,8 +31,6 @@ public class UpdaterClientManager {
     private static final Method GET_PLUGIN_FILE_METHOD;
     private static final long MAX_CONFIG_FILE_SIZE = 1024 * 1024; // 1MB
 
-    private Path backupPath;
-
     static {
         try {
             GET_PLUGIN_FILE_METHOD = JavaPlugin.class.getDeclaredMethod("getFile");
@@ -43,11 +41,6 @@ public class UpdaterClientManager {
     }
 
     public void init() {
-        File dataFolder = LocalhostBridgeCore.getInstance().getDataFolder();
-        // 转换为绝对路径，避免相对路径导致 getParentFile() 返回 null
-        dataFolder = dataFolder.getAbsoluteFile();
-        backupPath = dataFolder.getParentFile().getParentFile().toPath().resolve("LBC_UPDATER_BACKUP");
-
         ChannelListener pushListener = new ChannelListener() {
             @Override
             public void onMessageReceive(String from, String namespace, String seq, String data, boolean needReply, Replyable replyable) {
@@ -154,6 +147,11 @@ public class UpdaterClientManager {
         });
     }
 
+    private Path getBackupPath(String sharedPath) {
+        String serverName = LocalhostBridgeCoreAPIProvider.getAPI().getCurrentChannelName();
+        return new File(sharedPath, "backup").toPath().resolve(serverName);
+    }
+
     private UpdaterCallbackDTO handleUpdateSyncWithCallback(UpdaterResultDTO resultDTO, boolean updateJar, boolean trackFiles) {
         if (resultDTO == null || !resultDTO.isEnable()) {
             return new UpdaterCallbackDTO(false, false, new ArrayList<>(), new ArrayList<>());
@@ -177,7 +175,7 @@ public class UpdaterClientManager {
 
                     // 更新 JAR
                     if (updateJar) {
-                        if (updatePluginJar(currentPlugin, pluginName, pluginEntry.getValue(), repoDir, resultDTO.isBackupOnReplace())) {
+                        if (updatePluginJar(currentPlugin, pluginName, pluginEntry.getValue(), repoDir, resultDTO.getSharedPath(), resultDTO.isBackupOnReplace())) {
                             reboot = true;
                             if (trackFiles && pluginEntry.getValue() != null) {
                                 updatedPluginFiles.add(pluginEntry.getValue());
@@ -211,7 +209,7 @@ public class UpdaterClientManager {
                         );
                         
                         List<String> trackList = trackFiles ? new ArrayList<>() : null;
-                        if (syncPluginFolder(comparedPluginFolder, currentPluginFolder, pluginName, placeholderValue, resultDTO.isBackupOnReplace(), trackList)) {
+                        if (syncPluginFolder(comparedPluginFolder, currentPluginFolder, pluginName, placeholderValue, resultDTO.getSharedPath(), resultDTO.isBackupOnReplace(), trackList)) {
                             pluginsToReload.add(pluginName);
                             if (trackList != null) {
                                 updatedConfigFiles.addAll(trackList);
@@ -238,7 +236,7 @@ public class UpdaterClientManager {
         return new UpdaterCallbackDTO(hasUpdate, reboot, updatedConfigFiles, updatedPluginFiles);
     }
 
-    private boolean updatePluginJar(Plugin currentPlugin, String pluginName, String jarFileName, File repo, boolean backupOnReplace) throws Exception {
+    private boolean updatePluginJar(Plugin currentPlugin, String pluginName, String jarFileName, File repo, String sharedPath, boolean backupOnReplace) throws Exception {
         if (!(currentPlugin instanceof JavaPlugin)) {
             return false;
         }
@@ -271,6 +269,7 @@ public class UpdaterClientManager {
         String backupInfo = "No backup";
         
         if (backupOnReplace) {
+            Path backupPath = getBackupPath(sharedPath);
             Files.createDirectories(backupPath);
             Path backupJarPath = backupPath.resolve(usingJar.getName() + ".backup." + System.currentTimeMillis());
             Files.copy(usingJar.toPath(), backupJarPath, StandardCopyOption.REPLACE_EXISTING);
@@ -288,11 +287,11 @@ public class UpdaterClientManager {
         return true;
     }
 
-    private boolean syncPluginFolder(File comparedFolder, File currentFolder, String pluginName, String placeholderValue, boolean backupOnReplace, List<String> updatedFiles) throws Exception {
-        return syncFolderRecursive(comparedFolder, currentFolder, comparedFolder, pluginName, placeholderValue, backupOnReplace, updatedFiles);
+    private boolean syncPluginFolder(File comparedFolder, File currentFolder, String pluginName, String placeholderValue, String sharedPath, boolean backupOnReplace, List<String> updatedFiles) throws Exception {
+        return syncFolderRecursive(comparedFolder, currentFolder, comparedFolder, pluginName, placeholderValue, sharedPath, backupOnReplace, updatedFiles);
     }
 
-    private boolean syncFolderRecursive(File comparedRoot, File currentRoot, File comparedFolder, String pluginName, String placeholderValue, boolean backupOnReplace, List<String> updatedFiles) throws Exception {
+    private boolean syncFolderRecursive(File comparedRoot, File currentRoot, File comparedFolder, String pluginName, String placeholderValue, String sharedPath, boolean backupOnReplace, List<String> updatedFiles) throws Exception {
         File[] comparedFiles = comparedFolder.listFiles();
         if (comparedFiles == null) {
             return false;
@@ -310,7 +309,7 @@ public class UpdaterClientManager {
                     // noinspection ResultOfMethodCallIgnored
                     currentFile.mkdirs();
                 }
-                if (syncFolderRecursive(comparedRoot, currentRoot, comparedFile, pluginName, placeholderValue, backupOnReplace, updatedFiles)) {
+                if (syncFolderRecursive(comparedRoot, currentRoot, comparedFile, pluginName, placeholderValue, sharedPath, backupOnReplace, updatedFiles)) {
                     hasUpdates = true;
                 }
             } else {
@@ -321,6 +320,7 @@ public class UpdaterClientManager {
                         // 文件内容不同，需要更新
                         String backupInfo = "No backup";
                         if (backupOnReplace) {
+                            Path backupPath = getBackupPath(sharedPath);
                             Files.createDirectories(backupPath);
                             Path backupFilePath = backupPath.resolve(pluginName + "_" + relativePath.replace(File.separator, "_") + ".backup." + System.currentTimeMillis());
                             Files.copy(currentFile.toPath(), backupFilePath, StandardCopyOption.REPLACE_EXISTING);
