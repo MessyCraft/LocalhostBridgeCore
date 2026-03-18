@@ -1,9 +1,9 @@
 package io.github.messycraft.localhostbridgecore.bungee.util;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import io.github.messycraft.localhostbridgecore.bungee.Properties;
 import io.github.messycraft.localhostbridgecore.bungee.entity.LChannel;
+import io.github.messycraft.localhostbridgecore.common.util.GsonUtil;
 
 import java.io.*;
 import java.net.InetSocketAddress;
@@ -13,8 +13,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.function.Consumer;
 
 public final class ServerListPingUtil {
-
-    private static final Gson GSON = new Gson();
 
     private ServerListPingUtil() {}
 
@@ -73,7 +71,7 @@ public final class ServerListPingUtil {
                             SimpleUtil.runtimeWarning("Send [ERROR]" + logSuffix);
                             return;
                         }
-                        resp = GSON.fromJson(readString(packetIn), JsonObject.class).get("d").getAsString();
+                        resp = GsonUtil.GSON.fromJson(readString(packetIn), JsonObject.class).get("d").getAsString();
                         if (sender.equals("BC")) {
                             SimpleUtil.debug("Response " + logSuffix + " -> " + resp);
                         }

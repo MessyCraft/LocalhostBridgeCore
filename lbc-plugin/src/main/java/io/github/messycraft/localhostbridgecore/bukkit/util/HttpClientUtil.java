@@ -1,8 +1,8 @@
 package io.github.messycraft.localhostbridgecore.bukkit.util;
 
-import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import io.github.messycraft.localhostbridgecore.bukkit.LocalhostBridgeCore;
+import io.github.messycraft.localhostbridgecore.common.util.GsonUtil;
 import lombok.AllArgsConstructor;
 import org.bukkit.Bukkit;
 
@@ -20,8 +20,6 @@ import java.util.function.Consumer;
 import java.util.logging.Level;
 
 public final class HttpClientUtil {
-
-    private static final Gson GSON = new Gson();
 
     private static int CONNECT_TIMEOUT = 50;
     private static int READ_TIMEOUT = 10000;
@@ -158,7 +156,7 @@ public final class HttpClientUtil {
                 if (resp.code == 200 && resp.data != null) {
                     SimpleUtil.debug("Response(broadcast) " + logSuffix + " -> " + resp.data);
                     if (reply != null) {
-                        reply.accept(GSON.fromJson(resp.data, TypeToken.getParameterized(Map.class, String.class, String.class).getType()));
+                        reply.accept(GsonUtil.GSON.fromJson(resp.data, TypeToken.getParameterized(Map.class, String.class, String.class).getType()));
                     }
                     return;
                 }
@@ -192,7 +190,7 @@ public final class HttpClientUtil {
         ResponseStruct resp = doPost("/hello", null, null, target);
         Map<String, Integer> ret = new HashMap<>();
         if (resp.code == 200) {
-            ret.putAll(GSON.fromJson(resp.data, TypeToken.getParameterized(Map.class, String.class, Integer.class).getType()));
+            ret.putAll(GsonUtil.GSON.fromJson(resp.data, TypeToken.getParameterized(Map.class, String.class, Integer.class).getType()));
         }
         else {
             ret.put(String.valueOf(target), -1);

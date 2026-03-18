@@ -1,16 +1,16 @@
 package io.github.messycraft.localhostbridgecore.bungee.command;
 
-import com.google.gson.Gson;
 import io.github.messycraft.localhostbridgecore.api.LocalhostBridgeCoreAPIProvider;
 import io.github.messycraft.localhostbridgecore.bungee.LocalhostBridgeCore;
 import io.github.messycraft.localhostbridgecore.bungee.Properties;
 import io.github.messycraft.localhostbridgecore.bungee.entity.LChannel;
-import io.github.messycraft.localhostbridgecore.bungee.util.ChannelRegistrationUtil;
 import io.github.messycraft.localhostbridgecore.bungee.manager.HttpServerManager;
+import io.github.messycraft.localhostbridgecore.bungee.util.ChannelRegistrationUtil;
 import io.github.messycraft.localhostbridgecore.bungee.util.SimpleUtil;
 import io.github.messycraft.localhostbridgecore.bungee.util.YamlConfigurationUtil;
 import io.github.messycraft.localhostbridgecore.common.dto.UpdaterCallbackDTO;
 import io.github.messycraft.localhostbridgecore.common.dto.UpdaterResultDTO;
+import io.github.messycraft.localhostbridgecore.common.util.GsonUtil;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.plugin.Command;
 import net.md_5.bungee.api.plugin.PluginDescription;
@@ -22,8 +22,6 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class MainCommand extends Command implements TabExecutor {
-
-    private static final Gson GSON = new Gson();
 
     public MainCommand() {
         super("lbc", "localhostbridgecore.admin", "localhostbridgecore");
@@ -296,9 +294,9 @@ public class MainCommand extends Command implements TabExecutor {
         SimpleUtil.runAsyncAsLBC(() -> {
             for (String server : ChannelRegistrationUtil.getRegisteredChannel().keySet()) {
                 UpdaterResultDTO updaterResultDTO = LocalhostBridgeCore.getInstance().getUpdaterManager().generateUpdaterResult(server);
-                LocalhostBridgeCoreAPIProvider.getAPI().sendForReply(server, "lbc:PushPluginUpdater", GSON.toJson(updaterResultDTO), r -> {
+                LocalhostBridgeCoreAPIProvider.getAPI().sendForReply(server, "lbc:PushPluginUpdater", GsonUtil.GSON.toJson(updaterResultDTO), r -> {
                     try {
-                        UpdaterCallbackDTO updaterCallbackDTO = GSON.fromJson(r, UpdaterCallbackDTO.class);
+                        UpdaterCallbackDTO updaterCallbackDTO = GsonUtil.GSON.fromJson(r, UpdaterCallbackDTO.class);
                         sendPushUpdateReport(sender, server, updaterCallbackDTO);
                     } catch (Exception e) {
                         SimpleUtil.sendTextMessage(sender, "&c[Updater] 服务器 &e" + server + "&c: 解析回复数据失败");
@@ -318,9 +316,9 @@ public class MainCommand extends Command implements TabExecutor {
         SimpleUtil.sendTextMessage(sender, "&e[Updater] 正在推送服务器 " + serverName + " 的配置文件更新...");
         SimpleUtil.runAsyncAsLBC(() -> {
             UpdaterResultDTO updaterResultDTO = LocalhostBridgeCore.getInstance().getUpdaterManager().generateUpdaterResult(serverName);
-            LocalhostBridgeCoreAPIProvider.getAPI().sendForReply(serverName, "lbc:PushPluginUpdater", GSON.toJson(updaterResultDTO), r -> {
+            LocalhostBridgeCoreAPIProvider.getAPI().sendForReply(serverName, "lbc:PushPluginUpdater", GsonUtil.GSON.toJson(updaterResultDTO), r -> {
                 try {
-                    UpdaterCallbackDTO updaterCallbackDTO = GSON.fromJson(r, UpdaterCallbackDTO.class);
+                    UpdaterCallbackDTO updaterCallbackDTO = GsonUtil.GSON.fromJson(r, UpdaterCallbackDTO.class);
                     sendPushUpdateReport(sender, serverName, updaterCallbackDTO);
                 } catch (Exception e) {
                     SimpleUtil.sendTextMessage(sender, "&c[Updater] 服务器 &e" + serverName + "&c: 解析回复数据失败");
@@ -335,9 +333,9 @@ public class MainCommand extends Command implements TabExecutor {
         SimpleUtil.runAsyncAsLBC(() -> {
             for (String server : ChannelRegistrationUtil.getRegisteredChannel().keySet()) {
                 UpdaterResultDTO updaterResultDTO = LocalhostBridgeCore.getInstance().getUpdaterManager().generateUpdaterResult(server);
-                LocalhostBridgeCoreAPIProvider.getAPI().sendForReply(server, "lbc:RebootPluginUpdater", GSON.toJson(updaterResultDTO), r -> {
+                LocalhostBridgeCoreAPIProvider.getAPI().sendForReply(server, "lbc:RebootPluginUpdater", GsonUtil.GSON.toJson(updaterResultDTO), r -> {
                     try {
-                        UpdaterCallbackDTO updaterCallbackDTO = GSON.fromJson(r, UpdaterCallbackDTO.class);
+                        UpdaterCallbackDTO updaterCallbackDTO = GsonUtil.GSON.fromJson(r, UpdaterCallbackDTO.class);
                         sendRebootUpdateReport(sender, server, updaterCallbackDTO);
                     } catch (Exception e) {
                         SimpleUtil.sendTextMessage(sender, "&c[Updater] 服务器 &e" + server + "&c: 解析回复数据失败");
@@ -357,9 +355,9 @@ public class MainCommand extends Command implements TabExecutor {
         SimpleUtil.sendTextMessage(sender, "&e[Updater] 正在准备重启子服: " + serverName);
         SimpleUtil.runAsyncAsLBC(() -> {
             UpdaterResultDTO updaterResultDTO = LocalhostBridgeCore.getInstance().getUpdaterManager().generateUpdaterResult(serverName);
-            LocalhostBridgeCoreAPIProvider.getAPI().sendForReply(serverName, "lbc:RebootPluginUpdater", GSON.toJson(updaterResultDTO), r -> {
+            LocalhostBridgeCoreAPIProvider.getAPI().sendForReply(serverName, "lbc:RebootPluginUpdater", GsonUtil.GSON.toJson(updaterResultDTO), r -> {
                 try {
-                    UpdaterCallbackDTO updaterCallbackDTO = GSON.fromJson(r, UpdaterCallbackDTO.class);
+                    UpdaterCallbackDTO updaterCallbackDTO = GsonUtil.GSON.fromJson(r, UpdaterCallbackDTO.class);
                     sendRebootUpdateReport(sender, serverName, updaterCallbackDTO);
                 } catch (Exception e) {
                     SimpleUtil.sendTextMessage(sender, "&c[Updater] 服务器 &e" + serverName + "&c: 解析回复数据失败");

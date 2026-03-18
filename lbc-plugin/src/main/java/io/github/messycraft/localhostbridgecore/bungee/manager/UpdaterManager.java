@@ -1,6 +1,5 @@
 package io.github.messycraft.localhostbridgecore.bungee.manager;
 
-import com.google.gson.Gson;
 import io.github.messycraft.localhostbridgecore.api.LocalhostBridgeCoreAPIProvider;
 import io.github.messycraft.localhostbridgecore.api.subscribe.ChannelListener;
 import io.github.messycraft.localhostbridgecore.api.subscribe.Replyable;
@@ -9,6 +8,7 @@ import io.github.messycraft.localhostbridgecore.bungee.Properties;
 import io.github.messycraft.localhostbridgecore.bungee.UpdaterProperties;
 import io.github.messycraft.localhostbridgecore.bungee.util.PluginInfoUtil;
 import io.github.messycraft.localhostbridgecore.common.dto.UpdaterResultDTO;
+import io.github.messycraft.localhostbridgecore.common.util.GsonUtil;
 import lombok.Getter;
 
 import java.io.File;
@@ -24,8 +24,6 @@ import java.util.logging.Level;
 @Getter
 public class UpdaterManager {
 
-    private static final Gson GSON = new Gson();
-
     private boolean isRunning;
 
     public UpdaterManager() {
@@ -33,7 +31,7 @@ public class UpdaterManager {
             @Override
             public void onMessageReceive(String from, String namespace, String seq, String data, boolean needReply, Replyable replyable) {
                 if (needReply) {
-                    replyable.reply(GSON.toJson(isRunning ? generateUpdaterResult(from) : new UpdaterResultDTO()));
+                    replyable.reply(GsonUtil.GSON.toJson(isRunning ? generateUpdaterResult(from) : new UpdaterResultDTO()));
                 }
             }
         };

@@ -1,6 +1,5 @@
 package io.github.messycraft.localhostbridgecore.bukkit.manager;
 
-import com.google.gson.Gson;
 import io.github.messycraft.localhostbridgecore.api.LocalhostBridgeCoreAPIProvider;
 import io.github.messycraft.localhostbridgecore.api.subscribe.ChannelListener;
 import io.github.messycraft.localhostbridgecore.api.subscribe.Replyable;
@@ -8,6 +7,7 @@ import io.github.messycraft.localhostbridgecore.bukkit.LocalhostBridgeCore;
 import io.github.messycraft.localhostbridgecore.bukkit.util.SimpleUtil;
 import io.github.messycraft.localhostbridgecore.common.dto.UpdaterCallbackDTO;
 import io.github.messycraft.localhostbridgecore.common.dto.UpdaterResultDTO;
+import io.github.messycraft.localhostbridgecore.common.util.GsonUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -28,7 +28,6 @@ import java.util.logging.Level;
 
 public class UpdaterClientManager {
 
-    private static final Gson GSON = new Gson();
     private static final Method GET_PLUGIN_FILE_METHOD;
     private static final long MAX_CONFIG_FILE_SIZE = 32 * 1024; // 32KB
 
@@ -57,15 +56,15 @@ public class UpdaterClientManager {
                 }
 
                 try {
-                    UpdaterResultDTO resultDTO = GSON.fromJson(data, UpdaterResultDTO.class);
+                    UpdaterResultDTO resultDTO = GsonUtil.GSON.fromJson(data, UpdaterResultDTO.class);
                     UpdaterCallbackDTO callback = handleUpdateSyncWithCallback(resultDTO, false, true);
                     if (needReply) {
-                        replyable.reply(GSON.toJson(callback));
+                        replyable.reply(GsonUtil.GSON.toJson(callback));
                     }
                 } catch (Exception e) {
                     LocalhostBridgeCore.getInstance().getLogger().log(Level.SEVERE, "Failed to handle push update", e);
                     if (needReply) {
-                        replyable.reply(GSON.toJson(new UpdaterCallbackDTO(false, false, new ArrayList<>(), new ArrayList<>())));
+                        replyable.reply(GsonUtil.GSON.toJson(new UpdaterCallbackDTO(false, false, new ArrayList<>(), new ArrayList<>())));
                     }
                 }
             }
@@ -78,23 +77,23 @@ public class UpdaterClientManager {
                 }
 
                 try {
-                    UpdaterResultDTO resultDTO = GSON.fromJson(data, UpdaterResultDTO.class);
+                    UpdaterResultDTO resultDTO = GsonUtil.GSON.fromJson(data, UpdaterResultDTO.class);
                     boolean hasPlayers = !Bukkit.getOnlinePlayers().isEmpty();
                     try {
                         UpdaterCallbackDTO callback = handleUpdateSyncWithCallback(resultDTO, !hasPlayers, true);
                         if (needReply) {
-                            replyable.reply(GSON.toJson(callback));
+                            replyable.reply(GsonUtil.GSON.toJson(callback));
                         }
                     } catch (Exception e) {
                         LocalhostBridgeCore.getInstance().getLogger().log(Level.SEVERE, "Failed to handle reboot update", e);
                         if (needReply) {
-                            replyable.reply(GSON.toJson(new UpdaterCallbackDTO(false, false, new ArrayList<>(), new ArrayList<>())));
+                            replyable.reply(GsonUtil.GSON.toJson(new UpdaterCallbackDTO(false, false, new ArrayList<>(), new ArrayList<>())));
                         }
                     }
                 } catch (Exception e) {
                     LocalhostBridgeCore.getInstance().getLogger().log(Level.SEVERE, "Failed to parse reboot update DTO", e);
                     if (needReply) {
-                        replyable.reply(GSON.toJson(new UpdaterCallbackDTO(false, false, new ArrayList<>(), new ArrayList<>())));
+                        replyable.reply(GsonUtil.GSON.toJson(new UpdaterCallbackDTO(false, false, new ArrayList<>(), new ArrayList<>())));
                     }
                 }
             }
@@ -105,7 +104,7 @@ public class UpdaterClientManager {
         if (SimpleUtil.isPluginUpdaterEnable()) {
             LocalhostBridgeCoreAPIProvider.getAPI().sendForReply("BC" ,"lbc:PluginUpdater", "", r -> {
                 try {
-                    UpdaterResultDTO resultDTO = GSON.fromJson(r, UpdaterResultDTO.class);
+                    UpdaterResultDTO resultDTO = GsonUtil.GSON.fromJson(r, UpdaterResultDTO.class);
                     check(resultDTO);
                 } catch (Exception e) {
                     LocalhostBridgeCore.getInstance().getLogger().log(Level.SEVERE, "Failed to parse updater result from BC", e);
