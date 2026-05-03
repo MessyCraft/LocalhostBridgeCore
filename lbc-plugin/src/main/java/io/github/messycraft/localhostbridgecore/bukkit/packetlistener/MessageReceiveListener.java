@@ -11,7 +11,9 @@ import io.github.messycraft.localhostbridgecore.bukkit.util.SimpleUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 
+import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
+import java.net.URLDecoder;
 
 public class MessageReceiveListener extends SimplePacketListenerAbstract {
 
@@ -43,7 +45,15 @@ public class MessageReceiveListener extends SimplePacketListenerAbstract {
                 if (i > 5) dataSB.append("$");
                 dataSB.append(reqStr[i]);
             }
-            String data = dataSB.toString();
+            String data;
+            // URL-decode data that was URL-encoded by sendCustomData
+            // to prevent special characters from causing issues in the
+            // Minecraft handshake hostname field during transmission
+            try {
+                data = URLDecoder.decode(dataSB.toString(), "UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                throw new RuntimeException("UTF-8 not supported", e);
+            }
             if (namespace.isEmpty() && needReply) {
                 event.getUser().sendPacketSilently(new WrapperStatusServerResponse("{\"d\": \"Hello\"}"));
                 SimpleUtil.debug("Receive -> Hello " + seq);

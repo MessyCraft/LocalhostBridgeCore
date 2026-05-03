@@ -12,6 +12,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
@@ -62,10 +63,13 @@ public final class HttpClientUtil {
             if (SimpleUtil.nameMatches(target)) conn.setRequestProperty("target", target);
 
             if (data != null) {
-                byte[] writeBytes = data.getBytes();
+                // URL-encode to prevent special characters (especially '%')
+                // from causing issues during HTTP transmission
+                String encodedData = URLEncoder.encode(data, "UTF-8");
+                byte[] writeBytes = encodedData.getBytes(StandardCharsets.UTF_8);
                 conn.setRequestProperty("Content-Length", String.valueOf(writeBytes.length));
                 OutputStream os = conn.getOutputStream();
-                os.write(data.getBytes(StandardCharsets.UTF_8));
+                os.write(writeBytes);
                 os.flush();
                 os.close();
             }

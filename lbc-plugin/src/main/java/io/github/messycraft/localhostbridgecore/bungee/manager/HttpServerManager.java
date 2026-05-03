@@ -15,6 +15,7 @@ import lombok.Getter;
 
 import java.io.*;
 import java.net.InetSocketAddress;
+import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -111,7 +112,13 @@ public final class HttpServerManager {
             return;
         }
         String line = readFirstLine(httpExchange.getRequestBody());
-        final String data = (line == null) ? "" : line;
+        // URL-decode data that was URL-encoded by HttpClientUtil before HTTP transmission
+        final String data;
+        try {
+            data = URLDecoder.decode((line == null) ? "" : line, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException("UTF-8 not supported", e);
+        }
         SimpleUtil.debug(String.format("Broadcast -> {(FROM) %s, %s, %s, %s, %s}", from, namespace, needReply, seq, data));
         assert from != null;
 
@@ -191,7 +198,13 @@ public final class HttpServerManager {
             return;
         }
         String line = readFirstLine(httpExchange.getRequestBody());
-        final String data = (line == null) ? "" : line;
+        String data = (line == null) ? "" : line;
+        // URL-decode data that was URL-encoded by HttpClientUtil before HTTP transmission
+        try {
+            data = URLDecoder.decode(data, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException("UTF-8 not supported", e);
+        }
         if (target.equals("BC")) {
             SimpleUtil.debug(String.format("Receive -> {%s, %s, %s, %s, %s}", from, namespace, needReply, seq, data));
             String ret = ((ListenerManagerBungeeImpl) LocalhostBridgeCoreAPIProvider.getAPI().getListenerManager()).call(from, namespace, seq, data, needReply);

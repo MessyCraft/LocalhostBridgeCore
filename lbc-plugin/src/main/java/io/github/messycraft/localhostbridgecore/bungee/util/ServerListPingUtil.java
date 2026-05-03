@@ -9,6 +9,7 @@ import java.io.*;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.function.Consumer;
 
@@ -23,7 +24,16 @@ public final class ServerListPingUtil {
     public static void sendCustomData(String sender, LChannel channel, String namespace, String data, boolean needReply, String seq, Consumer<String> reply, Runnable noReply) {
         String logSuffix = "[" + seq + "]";
         int port = channel.getPort();
-        int totalLength = sender.length() + namespace.length() + data.length() + 15;
+        // URL-encode data to prevent special characters (especially '%')
+        // from causing URL decoding errors in the receiving server's
+        // Netty pipeline when the Minecraft handshake hostname is processed
+        String encodedData;
+        try {
+            encodedData = URLEncoder.encode(data, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException("UTF-8 not supported", e);
+        }
+        int totalLength = sender.length() + namespace.length() + encodedData.length() + 15;
         if (totalLength > 32767) {
             SimpleUtil.runtimeWarning(String.format("IGNORE TOO LONG (>32767) -> {%s, %s, %s, %s, %s...}", sender, namespace, needReply, seq, data.length() > 20 ? data.substring(0, 20) : data));
             if (noReply != null) {
@@ -51,7 +61,7 @@ public final class ServerListPingUtil {
                 ) {
                     writeVarInt(handshake, 0x00);
                     writeVarInt(handshake, -1);
-                    writeString(handshake, spawnHeaders(sender, namespace, needReply, seq) + data);
+                    writeString(handshake, spawnHeaders(sender, namespace, needReply, seq) + encodedData);
                     handshake.writeShort(port);
                     writeVarInt(handshake, 1);
                     handshake.flush();

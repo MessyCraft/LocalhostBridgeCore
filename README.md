@@ -97,6 +97,9 @@ Centralized plugin management system for multi-server networks. Deploy configura
 
 ## Changelog
 
+### v1.1.1-SNAPSHOT (2026-05-03)
+- **Fixed**: A data with "%" causes failures
+
 ### v1.1.0-SNAPSHOT (2026-03-18)
 - **Added**: Plugin Updater (major update)
 - **Added**: Centralized management and backup system
