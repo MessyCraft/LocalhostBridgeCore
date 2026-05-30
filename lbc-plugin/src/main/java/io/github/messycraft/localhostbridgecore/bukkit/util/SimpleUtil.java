@@ -18,6 +18,10 @@ public final class SimpleUtil {
         }
     }
 
+    public static boolean isDebugMode() {
+        return LocalhostBridgeCore.getInstance().getConfig().getBoolean("debug");
+    }
+
     public static void runtimeWarning(String text) {
         if (
                 LocalhostBridgeCore.getInstance().getConfig().getBoolean("show-warnings", true) ||

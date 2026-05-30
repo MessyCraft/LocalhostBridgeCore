@@ -85,6 +85,9 @@ public final class HttpClientUtil {
             return new ResponseStruct(code, result, seq);
         }
         catch (IOException e) {
+            if (SimpleUtil.isDebugMode()) {
+                e.printStackTrace();
+            }
             return new ResponseStruct(-1, null, seq);
         }
         finally {
