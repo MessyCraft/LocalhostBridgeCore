@@ -9,6 +9,10 @@ import io.github.messycraft.localhostbridgecore.common.dto.UpdaterCallbackDTO;
 import io.github.messycraft.localhostbridgecore.common.dto.UpdaterResultDTO;
 import io.github.messycraft.localhostbridgecore.common.util.GsonUtil;
 import org.bukkit.Bukkit;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.HandlerList;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -39,6 +43,8 @@ public class UpdaterClientManager {
             throw new RuntimeException(e);
         }
     }
+
+    private Listener delayRebootListener = null;
 
     public void init() {
         ChannelListener pushListener = new ChannelListener() {
@@ -83,8 +89,7 @@ public class UpdaterClientManager {
 
                 try {
                     UpdaterResultDTO resultDTO = GsonUtil.GSON.fromJson(data, UpdaterResultDTO.class);
-                    boolean hasPlayers = !Bukkit.getOnlinePlayers().isEmpty();
-                    UpdaterCallbackDTO callback = handleUpdateSyncWithCallback(resultDTO, !hasPlayers, true);
+                    UpdaterCallbackDTO callback = handleUpdateSyncWithCallback(resultDTO, true, true);
                     if (needReply) {
                         replyable.reply(GsonUtil.GSON.toJson(callback));
                     }
@@ -233,12 +238,39 @@ public class UpdaterClientManager {
         }
         
         if (reboot) {
-            // Bukkit.getScheduler().runTask(LocalhostBridgeCore.getInstance(), Bukkit.spigot()::restart);
-            Bukkit.getScheduler().runTask(LocalhostBridgeCore.getInstance(), Bukkit::shutdown);
+            boolean hasPlayers = !Bukkit.getOnlinePlayers().isEmpty();
+            if (hasPlayers) {
+                reboot = false;
+                if (delayRebootListener == null) {
+                    delayRebootListener = new Listener() {
+                        @EventHandler
+                        public void onQuit(PlayerQuitEvent event) {
+                            Bukkit.getScheduler().runTaskLater(LocalhostBridgeCore.getInstance(), () -> {
+                                if (Bukkit.getOnlinePlayers().isEmpty()) {
+                                    HandlerList.unregisterAll(this);
+                                    delayRebootListener = null;
+                                    scheduleReboot();
+                                }
+                            }, 2L);
+                        }
+                    };
+                    Bukkit.getScheduler().runTask(LocalhostBridgeCore.getInstance(), () -> {
+                        Bukkit.getPluginManager().registerEvents(delayRebootListener, LocalhostBridgeCore.getInstance());
+                        LocalhostBridgeCore.getInstance().getLogger().info("[UPDATER] 监听器已设置，待服务器内无玩家时自动重启更新");
+                    });
+                }
+            }
+            else scheduleReboot();
         }
         
         boolean hasUpdate = !updatedConfigFiles.isEmpty() || !updatedPluginFiles.isEmpty();
         return new UpdaterCallbackDTO(hasUpdate, reboot, updatedConfigFiles, updatedPluginFiles);
+    }
+
+    private void scheduleReboot() {
+        LocalhostBridgeCore.getInstance().getLogger().info("[UPDATER] 服务器内无玩家，准备重启服务器以应用插件更新");
+        // Bukkit.getScheduler().runTask(LocalhostBridgeCore.getInstance(), Bukkit.spigot()::restart);
+        Bukkit.getScheduler().runTask(LocalhostBridgeCore.getInstance(), Bukkit::shutdown);
     }
 
     private boolean updatePluginJar(Plugin currentPlugin, String pluginName, String jarFileName, File repo, String sharedPath, boolean backupOnReplace) throws Exception {
@@ -267,6 +299,11 @@ public class UpdaterClientManager {
         // 比较 SHA256，如果相同则无需更新
         if (sha256(comparedJar.toPath()).equals(sha256(usingJar.toPath()))) {
             return false;
+        }
+
+        // 如果已经在待重启队列了直接返回成功
+        if (delayRebootListener != null) {
+            return true;
         }
 
         // 执行更新

@@ -482,9 +482,9 @@ public class MainCommand extends Command implements TabExecutor {
                 message.append("&2  状态: 正在重启以应用更新\n");
             } else if (updaterCallbackDTO.getUpdatedPluginFiles() != null && !updaterCallbackDTO.getUpdatedPluginFiles().isEmpty()) {
                 if (updaterCallbackDTO.getUpdatedConfigFiles() != null && !updaterCallbackDTO.getUpdatedConfigFiles().isEmpty()) {
-                    message.append("&2  状态: Jar更新失败(服务器内有玩家); 配置已热重载\n");
+                    message.append("&2  状态: Jar更新被推迟(服务器内有玩家, 将于无人时自动重启); 配置已热重载\n");
                 } else {
-                    message.append("&2  状态: Jar更新失败(服务器内有玩家)\n");
+                    message.append("&2  状态: Jar更新被推迟(服务器内有玩家, 将于无人时自动重启)\n");
                 }
             } else {
                 message.append("&2  状态: 配置已热重载\n");
