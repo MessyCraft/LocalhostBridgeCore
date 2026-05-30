@@ -44,7 +44,13 @@ public class UpdaterClientManager {
         ChannelListener pushListener = new ChannelListener() {
             @Override
             public void onMessageReceive(String from, String namespace, String seq, String data, boolean needReply, Replyable replyable) {
-                if (!"BC".equals(from) || !SimpleUtil.isPluginUpdaterEnable()) {
+                if (!"BC".equals(from)) {
+                    return;
+                }
+                if (!SimpleUtil.isPluginUpdaterEnable()) {
+                    if (needReply) {
+                        replyable.reply(GsonUtil.GSON.toJson(new UpdaterCallbackDTO()));
+                    }
                     return;
                 }
 
@@ -65,26 +71,25 @@ public class UpdaterClientManager {
         ChannelListener rebootListener = new ChannelListener() {
             @Override
             public void onMessageReceive(String from, String namespace, String seq, String data, boolean needReply, Replyable replyable) {
-                if (!"BC".equals(from) || !SimpleUtil.isPluginUpdaterEnable()) {
+                if (!"BC".equals(from)) {
+                    return;
+                }
+                if (!SimpleUtil.isPluginUpdaterEnable()) {
+                    if (needReply) {
+                        replyable.reply(GsonUtil.GSON.toJson(new UpdaterCallbackDTO()));
+                    }
                     return;
                 }
 
                 try {
                     UpdaterResultDTO resultDTO = GsonUtil.GSON.fromJson(data, UpdaterResultDTO.class);
                     boolean hasPlayers = !Bukkit.getOnlinePlayers().isEmpty();
-                    try {
-                        UpdaterCallbackDTO callback = handleUpdateSyncWithCallback(resultDTO, !hasPlayers, true);
-                        if (needReply) {
-                            replyable.reply(GsonUtil.GSON.toJson(callback));
-                        }
-                    } catch (Exception e) {
-                        LocalhostBridgeCore.getInstance().getLogger().log(Level.SEVERE, "Failed to handle reboot update", e);
-                        if (needReply) {
-                            replyable.reply(GsonUtil.GSON.toJson(new UpdaterCallbackDTO(false, false, new ArrayList<>(), new ArrayList<>())));
-                        }
+                    UpdaterCallbackDTO callback = handleUpdateSyncWithCallback(resultDTO, !hasPlayers, true);
+                    if (needReply) {
+                        replyable.reply(GsonUtil.GSON.toJson(callback));
                     }
                 } catch (Exception e) {
-                    LocalhostBridgeCore.getInstance().getLogger().log(Level.SEVERE, "Failed to parse reboot update DTO", e);
+                    LocalhostBridgeCore.getInstance().getLogger().log(Level.SEVERE, "Failed to handle reboot update", e);
                     if (needReply) {
                         replyable.reply(GsonUtil.GSON.toJson(new UpdaterCallbackDTO(false, false, new ArrayList<>(), new ArrayList<>())));
                     }

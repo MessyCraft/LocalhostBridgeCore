@@ -454,7 +454,7 @@ public class MainCommand extends Command implements TabExecutor {
             
             SimpleUtil.sendTextMessage(sender, message.toString());
         } else if (updaterCallbackDTO != null) {
-            SimpleUtil.sendTextMessage(sender, "&7[Updater] 服务器 &e" + serverName + "&7: 无需更新");
+            SimpleUtil.sendTextMessage(sender, "&7[Updater] 服务器 &e" + serverName + "&7: " + (updaterCallbackDTO.isDisabled() ? "此服务器未启用更新器" : "无需更新"));
         }
     }
 
@@ -493,7 +493,7 @@ public class MainCommand extends Command implements TabExecutor {
 
             SimpleUtil.sendTextMessage(sender, message.toString());
         } else if (updaterCallbackDTO != null) {
-            SimpleUtil.sendTextMessage(sender, "&7[Updater] 服务器 &e" + serverName + "&7: 无需更新");
+            SimpleUtil.sendTextMessage(sender, "&7[Updater] 服务器 &e" + serverName + "&7: " + (updaterCallbackDTO.isDisabled() ? "此服务器未启用更新器" : "无需更新"));
         }
     }
 
