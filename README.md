@@ -97,6 +97,16 @@ Centralized plugin management system for multi-server networks. Deploy configura
 
 ## Changelog
 
+### v1.2.0-SNAPSHOT (2026-05-31)
+- **Added**: Updater will automatically reboot server after all players leave the server
+
+### v1.1.3-SNAPSHOT (2026-05-30)
+- **Fixed**: True command tips when `plugin-updater-client.disable` == false
+- **Improved**: Print Exception output in debug mode
+
+### v1.1.2-SNAPSHOT (2026-05-14)
+- **Upgrade**: `packetevents` dependency 2.10.0 -> 2.12.1
+
 ### v1.1.1-SNAPSHOT (2026-05-03)
 - **Fixed**: A data with "%" causes failures
 
